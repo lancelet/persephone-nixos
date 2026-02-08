@@ -1,6 +1,8 @@
 { pkgs, ... }:
 
 {
+  imports = [ ./neovim.nix ];
+
   home.username = "jsm";
   home.homeDirectory = "/home/jsm";
   home.stateVersion = "25.11";
@@ -10,6 +12,7 @@
     enable = true;
     settings = {
       font-family = "JetBrainsMonoNL Nerd Font Mono";
+      keybind = "ctrl+shift+n=new_window";
     };
   };
 
@@ -67,8 +70,38 @@
     enableZshIntegration = true;
   };
 
+  # VS Code
+  programs.vscode = {
+    enable = true;
+    extensions = with pkgs.vscode-extensions; [
+      leanprover.lean4
+      tamasfe.even-better-toml
+      haskell.haskell
+      justusadam.language-haskell
+      james-yu.latex-workshop
+    ];
+    userSettings = {
+      "telemetry.telemetryLevel" = "off";
+    };
+  };
+
+  # Ensure nvim data directory exists (neo-tree needs it for logging on first launch)
+  xdg.enable = true;
+  home.file.".local/share/nvim/.keep".text = "";
+
   # User packages (moved from configuration.nix)
   home.packages = with pkgs; [
     kdePackages.kate
+
+    # Lean
+    elan
+
+    # Haskell
+    ghc
+    cabal-install
+    haskell-language-server
+
+    # LaTeX
+    texlive.combined.scheme-full
   ];
 }

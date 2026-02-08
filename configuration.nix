@@ -8,8 +8,16 @@
       ./hardware-configuration.nix
     ];
 
-  # Bootloader.
-  boot.loader.systemd-boot.enable = true;
+  # Bootloader (GRUB for HiDPI-friendly boot menu).
+  boot.loader.systemd-boot.enable = false;
+  boot.loader.grub = {
+    enable = true;
+    device = "nodev";
+    efiSupport = true;
+    gfxmodeEfi = "1024x768";
+    font = "${pkgs.dejavu_fonts}/share/fonts/truetype/DejaVuSans.ttf";
+    fontSize = 36;
+  };
   boot.loader.efi.canTouchEfiVariables = true;
 
   networking.hostName = "persephone";
@@ -102,11 +110,111 @@
     };
   };
 
-  # Remap CapsLock to Escape (kernel-level, works on Wayland + X11)
-  services.keyd = {
+  # Fingerprint authentication (fprintd itself enabled by nixos-hardware)
+  # Lock screen fingerprint works via the kde-fingerprint PAM service.
+  # SDDM substacks to login for auth, so disable fprintd on login
+  # (not sddm) to avoid a 30s fingerprint timeout at the login screen.
+  security.pam.services.sudo.fprintAuth = true;
+  security.pam.services.login.fprintAuth = false;
+
+  # macOS-style keyboard shortcuts via xremap
+  services.xremap = {
     enable = true;
-    keyboards.default.settings.main = {
-      capslock = "escape";
+    serviceMode = "user";
+    userName = "jsm";
+    withKDE = true;
+
+    config = {
+      # Single key remapping
+      modmap = [
+        {
+          name = "CapsLock to Escape";
+          remap = {
+            CapsLock = "Esc";
+          };
+        }
+      ];
+
+      # Combo remapping (first match wins)
+      keymap = [
+        # 1. Terminal overrides (Ghostty) — must be listed first
+        {
+          name = "Terminal (Ghostty)";
+          application = { only = [ "com.mitchellh.ghostty" ]; };
+          remap = {
+            # Clipboard / window management (Ctrl+Shift variants for terminal)
+            Super-c = "C-Shift-c";
+            Super-v = "C-Shift-v";
+            Super-x = "C-Shift-x";
+            Super-t = "C-Shift-t";
+            Super-w = "C-Shift-w";
+            Super-n = "C-Shift-n";
+            Super-a = "C-Shift-a";
+            Super-f = "C-Shift-f";
+            Super-q = "C-Shift-q";
+            Super-z = "C-z";
+            Super-Shift-z = "C-y";
+            Super-s = "C-s";
+
+            # Text navigation (duplicated for self-containment)
+            Super-Left = "Home";
+            Super-Right = "End";
+            Super-Up = "C-Home";
+            Super-Down = "C-End";
+            Alt-Left = "C-Left";
+            Alt-Right = "C-Right";
+            Alt-Backspace = "C-Backspace";
+            Super-Shift-Left = "Shift-Home";
+            Super-Shift-Right = "Shift-End";
+          };
+        }
+
+        # 2. Global macOS-style editing shortcuts
+        {
+          name = "Global macOS shortcuts";
+          remap = {
+            Super-c = "C-c";
+            Super-v = "C-v";
+            Super-x = "C-x";
+            Super-z = "C-z";
+            Super-Shift-z = "C-y";
+            Super-a = "C-a";
+            Super-s = "C-s";
+            Super-f = "C-f";
+            Super-w = "C-w";
+            Super-q = "Alt-F4";
+            Super-t = "C-t";
+            Super-n = "C-n";
+          };
+        }
+
+        # 3. Text navigation
+        {
+          name = "Text navigation";
+          remap = {
+            Super-Left = "Home";
+            Super-Right = "End";
+            Super-Up = "C-Home";
+            Super-Down = "C-End";
+            Alt-Left = "C-Left";
+            Alt-Right = "C-Right";
+            Alt-Backspace = "C-Backspace";
+            Super-Shift-Left = "Shift-Home";
+            Super-Shift-Right = "Shift-End";
+          };
+        }
+
+        # 4. Window management / KDE integration
+        {
+          name = "Window management";
+          remap = {
+            Super-Tab = "Alt-Tab";
+            Super-Space = "Alt-Space";
+            Super-LeftBrace = "Alt-Left";
+            Super-RightBrace = "Alt-Right";
+          };
+        }
+      ];
     };
   };
 
