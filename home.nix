@@ -47,7 +47,7 @@
         style = "italic cyan";
       };
       git_status = {
-        format = "[$all_status]($style)";
+        format = "[$all_status$ahead_behind]($style)";
         style = "cyan";
         ahead = "⇡\${count} ";
         diverged = "⇕⇡\${ahead_count}⇣\${behind_count} ";
@@ -89,9 +89,15 @@
   xdg.enable = true;
   home.file.".local/share/nvim/.keep".text = "";
 
-  # User packages (moved from configuration.nix)
+  # User packages
   home.packages = with pkgs; [
     kdePackages.kate
+    jq
+    tree
+    ripgrep
+    fd
+    bat
+    htop
 
     # Lean
     elan
