@@ -17,9 +17,14 @@
       url = "github:nix-community/stylix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    plasma-manager = {
+      url = "github:nix-community/plasma-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.home-manager.follows = "home-manager";
+    };
   };
 
-  outputs = { self, nixpkgs, nixos-hardware, home-manager, xremap-flake, nixvim, stylix }: {
+  outputs = { self, nixpkgs, nixos-hardware, home-manager, xremap-flake, nixvim, stylix, plasma-manager }: {
     nixosConfigurations.persephone = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
       modules = [
@@ -31,7 +36,10 @@
         {
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
-          home-manager.sharedModules = [ nixvim.homeModules.nixvim ];
+          home-manager.sharedModules = [
+            nixvim.homeModules.nixvim
+            plasma-manager.homeModules.plasma-manager
+          ];
           home-manager.users.jsm = import ./home.nix;
         }
       ];

@@ -7,6 +7,36 @@
   home.homeDirectory = "/home/jsm";
   home.stateVersion = "25.11";
 
+  # KDE Plasma settings (via plasma-manager)
+  programs.plasma.input.touchpads = [
+    {
+      name = "PIXA3854:00 093A:0274 Touchpad";
+      vendorId = "093a";
+      productId = "0274";
+      rightClickMethod = "twoFingers";
+      tapToClick = false;
+      naturalScroll = true;
+    }
+  ];
+
+  # Bottom panel — auto-hide like macOS dock
+  programs.plasma.panels = [
+    {
+      location = "bottom";
+      hiding = "autohide";
+      floating = true;
+      widgets = [
+        "org.kde.plasma.kickoff"
+        "org.kde.plasma.pager"
+        "org.kde.plasma.icontasks"
+        "org.kde.plasma.marginsseparator"
+        "org.kde.plasma.systemtray"
+        "org.kde.plasma.digitalclock"
+        "org.kde.plasma.showdesktop"
+      ];
+    }
+  ];
+
   # Ghostty terminal
   programs.ghostty = {
     enable = true;
@@ -92,6 +122,7 @@
         haskell.haskell
         justusadam.language-haskell
         james-yu.latex-workshop
+        asvetliakov.vscode-neovim
       ];
       userSettings = {
         "telemetry.telemetryLevel" = "off";

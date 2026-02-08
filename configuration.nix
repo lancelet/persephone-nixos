@@ -41,6 +41,12 @@
   # Configure keymap in X11
   services.xserver.xkb.layout = "us";
 
+  # Touchpad — macOS-style two-finger click = right-click (X11 fallback)
+  services.libinput.touchpad = {
+    tapping = false;
+    clickMethod = "clickfinger";
+  };
+
   # Enable CUPS to print documents.
   services.printing.enable = true;
 
@@ -221,6 +227,26 @@
   # System packages
   environment.systemPackages = with pkgs; [
     pciutils  # For lspci to verify GPU bus IDs
+    curl
+    wget
+    (let blender-cuda = blender.override { cudaSupport = true; };
+    in runCommand "blender" { nativeBuildInputs = [ makeWrapper ]; } ''
+      mkdir -p $out/bin $out/share/applications
+      makeWrapper ${blender-cuda}/bin/blender $out/bin/blender \
+        --set __NV_PRIME_RENDER_OFFLOAD 1 \
+        --set __NV_PRIME_RENDER_OFFLOAD_PROVIDER "NVIDIA-G0" \
+        --set __GLX_VENDOR_LIBRARY_NAME nvidia \
+        --set __VK_LAYER_NV_optimus "NVIDIA_only"
+      for dir in ${blender-cuda}/share/*; do
+        name=$(basename "$dir")
+        [ "$name" = "applications" ] && continue
+        ln -s "$dir" $out/share/$name
+      done
+      for f in ${blender-cuda}/share/applications/*.desktop; do
+        substitute "$f" $out/share/applications/$(basename "$f") \
+          --replace-quiet "${blender-cuda}/bin/blender" "$out/bin/blender"
+      done
+    '')
   ];
 
   # This value determines the NixOS release from which the default
@@ -230,6 +256,8 @@
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
   nix.settings.auto-optimise-store = true;
+  nix.settings.substituters = [ "https://cuda-maintainers.cachix.org" ];
+  nix.settings.trusted-public-keys = [ "cuda-maintainers.cachix.org-1:0dq3bujKpuEPMCX6U4WylrUDZ9JyUG0VpVZa7CNfq5E=" ];
   nix.gc = {
     automatic = true;
     dates = "weekly";
