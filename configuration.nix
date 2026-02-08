@@ -74,9 +74,7 @@
     isNormalUser = true;
     description = "Jonathan Merritt";
     extraGroups = [ "networkmanager" "wheel" ];
-    packages = with pkgs; [
-      kdePackages.kate
-    ];
+    packages = [ ];
   };
 
   # Install firefox.
@@ -100,6 +98,11 @@
       user.email = "j.s.merritt@gmail.com";
     };
   };
+
+  # Fonts
+  fonts.packages = with pkgs; [
+    nerd-fonts.jetbrains-mono
+  ];
 
   # System packages
   environment.systemPackages = with pkgs; [
