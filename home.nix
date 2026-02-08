@@ -95,9 +95,15 @@
       ];
       userSettings = {
         "telemetry.telemetryLevel" = "off";
+        "editor.minimap.enabled" = false;
+        "editor.rulers" = [ 80 120 ];
       };
     };
   };
+
+  # KDE Plasma replaces HM's .gtkrc-2.0 symlink with a regular file on every login;
+  # force-overwrite it so Stylix theming isn't blocked (home-manager#6188)
+  gtk.gtk2.force = true;
 
   # Ensure nvim data directory exists (neo-tree needs it for logging on first launch)
   xdg.enable = true;

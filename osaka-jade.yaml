@@ -1,0 +1,21 @@
+system: "base16"
+name: "Osaka Jade"
+author: "Omarchy (adapted for Stylix)"
+variant: "dark"
+palette:
+  base00: "111c18"  # Background
+  base01: "23372B"  # Lighter background (color0)
+  base02: "53685B"  # Selection / gutter (color8)
+  base03: "53685B"  # Comments
+  base04: "9eebb3"  # Subdued foreground (color15)
+  base05: "C1C497"  # Foreground
+  base06: "D7C995"  # Light foreground / cursor
+  base07: "F6F5DD"  # Bright white (color7)
+  base08: "FF5345"  # Red / errors (color1)
+  base09: "db9f9c"  # Orange-ish (color9)
+  base0A: "E5C736"  # Yellow (color11)
+  base0B: "549e6a"  # Green / strings (color2)
+  base0C: "2DD5B7"  # Cyan (color6)
+  base0D: "509475"  # Jade / functions (accent)
+  base0E: "D2689C"  # Magenta / keywords (color5)
+  base0F: "ACD4CF"  # Muted teal (color12)

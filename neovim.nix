@@ -34,12 +34,6 @@
       maplocalleader = " ";
     };
 
-    # Theme
-    colorschemes.catppuccin = {
-      enable = true;
-      settings.flavour = "mocha";
-    };
-
     plugins = {
       # Icons (required by telescope, neo-tree, bufferline)
       web-devicons.enable = true;

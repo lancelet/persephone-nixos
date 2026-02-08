@@ -1,6 +1,6 @@
 # NixOS configuration for persephone
 
-{ pkgs, ... }:
+{ lib, pkgs, ... }:
 
 {
   imports =
@@ -15,7 +15,7 @@
     device = "nodev";
     efiSupport = true;
     gfxmodeEfi = "1024x768";
-    font = "${pkgs.dejavu_fonts}/share/fonts/truetype/DejaVuSans.ttf";
+    font = lib.mkForce "${pkgs.dejavu_fonts}/share/fonts/truetype/DejaVuSans.ttf";
     fontSize = 36;
   };
   boot.loader.efi.canTouchEfiVariables = true;
@@ -189,6 +189,27 @@
           };
         }
       ];
+    };
+  };
+
+  # Stylix — unified theming (Osaka Jade)
+  stylix = {
+    enable = true;
+    base16Scheme = ./osaka-jade.yaml;
+    image = ./wallpapers/1-osaka-jade-bg.jpg;
+    polarity = "dark";
+
+    fonts = {
+      monospace = { package = pkgs.nerd-fonts.jetbrains-mono; name = "JetBrainsMono Nerd Font Mono"; };
+      sansSerif = { package = pkgs.noto-fonts; name = "Noto Sans"; };
+      serif = { package = pkgs.noto-fonts; name = "Noto Serif"; };
+      emoji = { package = pkgs.noto-fonts-color-emoji; name = "Noto Color Emoji"; };
+    };
+
+    cursor = {
+      package = pkgs.bibata-cursors;
+      name = "Bibata-Modern-Classic";
+      size = 24;
     };
   };
 

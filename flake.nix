@@ -13,15 +13,20 @@
       url = "github:nix-community/nixvim";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    stylix = {
+      url = "github:nix-community/stylix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, nixos-hardware, home-manager, xremap-flake, nixvim }: {
+  outputs = { self, nixpkgs, nixos-hardware, home-manager, xremap-flake, nixvim, stylix }: {
     nixosConfigurations.persephone = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
       modules = [
         nixos-hardware.nixosModules.framework-16-amd-ai-300-series-nvidia
         ./configuration.nix
         xremap-flake.nixosModules.default
+        stylix.nixosModules.stylix
         home-manager.nixosModules.home-manager
         {
           home-manager.useGlobalPkgs = true;
