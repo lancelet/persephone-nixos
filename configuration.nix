@@ -74,8 +74,11 @@
     isNormalUser = true;
     description = "Jonathan Merritt";
     extraGroups = [ "networkmanager" "wheel" ];
+    shell = pkgs.zsh;
     packages = [ ];
   };
+
+  programs.zsh.enable = true;
 
   # Install firefox.
   programs.firefox.enable = true;
