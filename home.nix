@@ -13,6 +13,12 @@
     };
   };
 
+  # Atuin - shell history
+  programs.atuin = {
+    enable = true;
+    enableBashIntegration = true;
+  };
+
   # User packages (moved from configuration.nix)
   home.packages = with pkgs; [
     kdePackages.kate

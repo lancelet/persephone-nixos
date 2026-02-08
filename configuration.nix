@@ -99,6 +99,14 @@
     };
   };
 
+  # Remap CapsLock to Escape (kernel-level, works on Wayland + X11)
+  services.keyd = {
+    enable = true;
+    keyboards.default.settings.main = {
+      capslock = "escape";
+    };
+  };
+
   # Fonts
   fonts.packages = with pkgs; [
     nerd-fonts.jetbrains-mono
