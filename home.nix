@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 
 {
   imports = [ ./neovim.nix ];
@@ -19,6 +19,7 @@
   # Zsh
   programs.zsh = {
     enable = true;
+    dotDir = "${config.xdg.configHome}/zsh";
     shellAliases = {
       nrs = "pushd -q ~/persephone-nixos && sudo nixos-rebuild switch --flake .#persephone ; popd -q";
     };
@@ -64,6 +65,15 @@
     };
   };
 
+  # Git
+  programs.git = {
+    enable = true;
+    settings.user = {
+      name = "Jonathan Merritt";
+      email = "j.s.merritt@gmail.com";
+    };
+  };
+
   # Atuin - shell history
   programs.atuin = {
     enable = true;
@@ -73,15 +83,19 @@
   # VS Code
   programs.vscode = {
     enable = true;
-    extensions = with pkgs.vscode-extensions; [
-      leanprover.lean4
-      tamasfe.even-better-toml
-      haskell.haskell
-      justusadam.language-haskell
-      james-yu.latex-workshop
-    ];
-    userSettings = {
-      "telemetry.telemetryLevel" = "off";
+    profiles.default = {
+      extensions = with pkgs.vscode-extensions; [
+        anthropic.claude-code
+        jnoortheen.nix-ide
+        leanprover.lean4
+        tamasfe.even-better-toml
+        haskell.haskell
+        justusadam.language-haskell
+        james-yu.latex-workshop
+      ];
+      userSettings = {
+        "telemetry.telemetryLevel" = "off";
+      };
     };
   };
 
@@ -92,6 +106,7 @@
   # User packages
   home.packages = with pkgs; [
     kdePackages.kate
+    gh
     jq
     tree
     ripgrep

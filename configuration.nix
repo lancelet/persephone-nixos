@@ -1,6 +1,6 @@
 # NixOS configuration for persephone
 
-{ config, pkgs, ... }:
+{ pkgs, ... }:
 
 {
   imports =
@@ -31,18 +31,6 @@
   # Select internationalisation properties.
   i18n.defaultLocale = "en_AU.UTF-8";
 
-  i18n.extraLocaleSettings = {
-    LC_ADDRESS = "en_AU.UTF-8";
-    LC_IDENTIFICATION = "en_AU.UTF-8";
-    LC_MEASUREMENT = "en_AU.UTF-8";
-    LC_MONETARY = "en_AU.UTF-8";
-    LC_NAME = "en_AU.UTF-8";
-    LC_NUMERIC = "en_AU.UTF-8";
-    LC_PAPER = "en_AU.UTF-8";
-    LC_TELEPHONE = "en_AU.UTF-8";
-    LC_TIME = "en_AU.UTF-8";
-  };
-
   # Enable the X11 windowing system.
   services.xserver.enable = true;
 
@@ -51,16 +39,12 @@
   services.desktopManager.plasma6.enable = true;
 
   # Configure keymap in X11
-  services.xserver.xkb = {
-    layout = "us";
-    variant = "";
-  };
+  services.xserver.xkb.layout = "us";
 
   # Enable CUPS to print documents.
   services.printing.enable = true;
 
   # Enable sound with pipewire.
-  services.pulseaudio.enable = false;
   security.rtkit.enable = true;
   services.pipewire = {
     enable = true;
@@ -83,7 +67,6 @@
     description = "Jonathan Merritt";
     extraGroups = [ "networkmanager" "wheel" ];
     shell = pkgs.zsh;
-    packages = [ ];
   };
 
   programs.zsh.enable = true;
@@ -99,15 +82,6 @@
   programs._1password-gui = {
     enable = true;
     polkitPolicyOwners = [ "jsm" ];
-  };
-
-  # Git
-  programs.git = {
-    enable = true;
-    config = {
-      user.name = "Jonathan Merritt";
-      user.email = "j.s.merritt@gmail.com";
-    };
   };
 
   # Fingerprint authentication (fprintd itself enabled by nixos-hardware)
@@ -225,7 +199,6 @@
 
   # System packages
   environment.systemPackages = with pkgs; [
-    gh
     pciutils  # For lspci to verify GPU bus IDs
   ];
 
@@ -235,4 +208,10 @@
   system.stateVersion = "25.11";
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings.auto-optimise-store = true;
+  nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 30d";
+  };
 }
