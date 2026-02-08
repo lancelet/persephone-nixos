@@ -8,6 +8,8 @@
   home.stateVersion = "25.11";
 
   # KDE Plasma settings (via plasma-manager)
+  programs.plasma.enable = true;
+  programs.plasma.overrideConfig = true;
   programs.plasma.input.touchpads = [
     {
       name = "PIXA3854:00 093A:0274 Touchpad";
@@ -25,6 +27,7 @@
       location = "bottom";
       hiding = "autohide";
       floating = true;
+      screen = "all";
       widgets = [
         "org.kde.plasma.kickoff"
         "org.kde.plasma.pager"
