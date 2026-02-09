@@ -22,6 +22,7 @@ in
       rightClickMethod = "twoFingers";
       tapToClick = false;
       naturalScroll = true;
+      scrollSpeed = 0.5;
     }
   ];
 
@@ -118,6 +119,16 @@ in
   programs.atuin = {
     enable = true;
     enableZshIntegration = true;
+  };
+
+  # Tmux
+  programs.tmux = {
+    enable = true;
+    mouse = true;
+    terminal = "tmux-256color";
+    baseIndex = 1;
+    escapeTime = 0;
+    keyMode = "vi";
   };
 
   # VS Code
