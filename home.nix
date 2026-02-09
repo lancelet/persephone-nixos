@@ -159,13 +159,14 @@ in
   # User packages
   home.packages = with pkgs; [
     kdePackages.kate
+    brave
     gh
     jq
     tree
     ripgrep
     fd
     bat
-    htop
+    btop
 
     # Lean
     elan
