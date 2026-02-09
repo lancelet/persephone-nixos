@@ -131,6 +131,9 @@
         "telemetry.telemetryLevel" = "off";
         "editor.minimap.enabled" = false;
         "editor.rulers" = [ 80 120 ];
+        "extensions.experimental.affinity" = {
+          "asvetliakov.vscode-neovim" = 1;
+        };
       };
     };
   };
