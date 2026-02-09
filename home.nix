@@ -1,5 +1,9 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
+let
+  theme = import ./theme.nix;
+  current = theme.${theme.active};
+in
 {
   imports = [ ./neovim.nix ];
 
@@ -45,7 +49,10 @@
     enable = true;
     settings = {
       font-family = "JetBrainsMonoNL Nerd Font Mono";
-      keybind = "ctrl+shift+n=new_window";
+      keybind = [
+        "ctrl+shift+n=new_window"
+        "ctrl+n=new_window"
+      ];
     };
   };
 
@@ -117,7 +124,7 @@
   programs.vscode = {
     enable = true;
     profiles.default = {
-      extensions = with pkgs.vscode-extensions; [
+      extensions = (with pkgs.vscode-extensions; [
         anthropic.claude-code
         jnoortheen.nix-ide
         leanprover.lean4
@@ -126,7 +133,8 @@
         justusadam.language-haskell
         james-yu.latex-workshop
         asvetliakov.vscode-neovim
-      ];
+      ]) ++ lib.optional (current ? vscode)
+        (pkgs.vscode-utils.extensionFromVscodeMarketplace current.vscode.extension);
       userSettings = {
         "telemetry.telemetryLevel" = "off";
         "editor.minimap.enabled" = false;
@@ -134,6 +142,8 @@
         "extensions.experimental.affinity" = {
           "asvetliakov.vscode-neovim" = 1;
         };
+      } // lib.optionalAttrs (current ? vscode) {
+        "workbench.colorTheme" = lib.mkForce current.vscode.themeName;
       };
     };
   };

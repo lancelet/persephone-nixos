@@ -2,6 +2,10 @@
 
 { lib, pkgs, ... }:
 
+let
+  theme = import ./theme.nix;
+  current = theme.${theme.active};
+in
 {
   imports =
     [
@@ -201,9 +205,7 @@
   # Stylix — unified theming (Osaka Jade)
   stylix = {
     enable = true;
-    base16Scheme = ./osaka-jade.yaml;
-    image = ./wallpapers/1-osaka-jade-bg.jpg;
-    polarity = "dark";
+    inherit (current.stylix) base16Scheme image polarity;
 
     fonts = {
       monospace = { package = pkgs.nerd-fonts.jetbrains-mono; name = "JetBrainsMono Nerd Font Mono"; };
@@ -211,6 +213,8 @@
       serif = { package = pkgs.noto-fonts; name = "Noto Serif"; };
       emoji = { package = pkgs.noto-fonts-color-emoji; name = "Noto Color Emoji"; };
     };
+
+    fonts.sizes.terminal = 10.5;
 
     cursor = {
       package = pkgs.bibata-cursors;

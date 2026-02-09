@@ -134,6 +134,19 @@
       indent-blankline.enable = true;
     };
 
+    # VS Code: use ASCII separators (status bar can't render Nerd Font icons)
+    extraConfigLua = ''
+      if vim.g.vscode then
+        require('lualine').setup({
+          options = {
+            icons_enabled = false,
+            section_separators = { left = "", right = "" },
+            component_separators = { left = "|", right = "|" },
+          },
+        })
+      end
+    '';
+
     # Keymaps
     keymaps = [
       { key = "<leader>e"; action = "<cmd>Neotree toggle<cr>"; options.desc = "Toggle file explorer"; mode = "n"; }
