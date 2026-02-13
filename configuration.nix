@@ -28,6 +28,7 @@ in
 
   # Enable networking
   networking.networkmanager.enable = true;
+  networking.nameservers = [ "8.8.8.8" "1.1.1.1" ];
 
   # Set your time zone.
   time.timeZone = "Australia/Sydney";
@@ -92,6 +93,12 @@ in
   programs._1password-gui = {
     enable = true;
     polkitPolicyOwners = [ "jsm" ];
+  };
+
+  # Ollama (local LLM inference with CUDA)
+  services.ollama = {
+    enable = true;
+    package = pkgs.ollama-cuda;
   };
 
   # Fingerprint authentication (fprintd itself enabled by nixos-hardware)
@@ -260,8 +267,15 @@ in
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
   nix.settings.auto-optimise-store = true;
-  nix.settings.substituters = [ "https://cuda-maintainers.cachix.org" ];
-  nix.settings.trusted-public-keys = [ "cuda-maintainers.cachix.org-1:0dq3bujKpuEPMCX6U4WylrUDZ9JyUG0VpVZa7CNfq5E=" ];
+  nix.settings.max-jobs = "auto";
+  nix.settings.substituters = [
+    "https://cuda-maintainers.cachix.org"
+    "https://nix-community.cachix.org"
+  ];
+  nix.settings.trusted-public-keys = [
+    "cuda-maintainers.cachix.org-1:0dq3bujKpuEPMCX6U4WylrUDZ9JyUG0VpVZa7CNfq5E="
+    "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+  ];
   nix.gc = {
     automatic = true;
     dates = "weekly";
