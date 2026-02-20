@@ -137,6 +137,9 @@ in
     baseIndex = 1;
     escapeTime = 0;
     keyMode = "vi";
+    # Use the largest attached client's dimensions so resizing one Ghostty
+    # window doesn't constrain other windows sharing the same session.
+    extraConfig = "set -g window-size largest";
   };
 
   # VS Code
