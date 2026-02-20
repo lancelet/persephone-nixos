@@ -76,7 +76,7 @@ in
   users.users.jsm = {
     isNormalUser = true;
     description = "Jonathan Merritt";
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = [ "networkmanager" "wheel" "_1password" ];
     shell = pkgs.zsh;
   };
 

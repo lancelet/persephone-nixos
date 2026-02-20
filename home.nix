@@ -122,6 +122,13 @@ in
     enableZshIntegration = true;
   };
 
+  # Direnv
+  programs.direnv = {
+    enable = true;
+    enableZshIntegration = true;
+    nix-direnv.enable = true;
+  };
+
   # Tmux
   programs.tmux = {
     enable = true;
@@ -168,10 +175,18 @@ in
   xdg.enable = true;
   home.file.".local/share/nvim/.keep".text = "";
 
+  # Brave browser with extensions
+  programs.chromium = {
+    enable = true;
+    package = pkgs.brave;
+    extensions = [
+      { id = "aeblfdkhhhdcdjpifhhbdiojplfjncoa"; } # 1Password
+    ];
+  };
+
   # User packages
   home.packages = with pkgs; [
     kdePackages.kate
-    brave
     gh
     jq
     tree
