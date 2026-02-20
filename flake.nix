@@ -1,5 +1,5 @@
 {
-  description = "NixOS configuration for persephone";
+  description = "NixOS configurations for persephone and hercules";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -24,24 +24,39 @@
     };
   };
 
-  outputs = { self, nixpkgs, nixos-hardware, home-manager, xremap-flake, nixvim, stylix, plasma-manager }: {
+  outputs = { self, nixpkgs, nixos-hardware, home-manager, xremap-flake, nixvim, stylix, plasma-manager }:
+  let
+    homeManagerConfig = {
+      home-manager.useGlobalPkgs = true;
+      home-manager.useUserPackages = true;
+      home-manager.sharedModules = [
+        nixvim.homeModules.nixvim
+        plasma-manager.homeModules.plasma-manager
+      ];
+      home-manager.users.jsm = import ./home.nix;
+    };
+
+    commonModules = [
+      ./common.nix
+      xremap-flake.nixosModules.default
+      stylix.nixosModules.stylix
+      home-manager.nixosModules.home-manager
+      homeManagerConfig
+    ];
+  in
+  {
     nixosConfigurations.persephone = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
-      modules = [
+      modules = commonModules ++ [
         nixos-hardware.nixosModules.framework-16-amd-ai-300-series-nvidia
-        ./configuration.nix
-        xremap-flake.nixosModules.default
-        stylix.nixosModules.stylix
-        home-manager.nixosModules.home-manager
-        {
-          home-manager.useGlobalPkgs = true;
-          home-manager.useUserPackages = true;
-          home-manager.sharedModules = [
-            nixvim.homeModules.nixvim
-            plasma-manager.homeModules.plasma-manager
-          ];
-          home-manager.users.jsm = import ./home.nix;
-        }
+        ./hosts/persephone/default.nix
+      ];
+    };
+
+    nixosConfigurations.hercules = nixpkgs.lib.nixosSystem {
+      system = "x86_64-linux";
+      modules = commonModules ++ [
+        ./hosts/hercules/default.nix
       ];
     };
   };
