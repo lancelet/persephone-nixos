@@ -179,9 +179,8 @@ in
   home.file.".local/share/nvim/.keep".text = "";
 
   # Brave browser with extensions
-  programs.chromium = {
+  programs.brave = {
     enable = true;
-    package = pkgs.brave;
     extensions = [
       { id = "aeblfdkhhhdcdjpifhhbdiojplfjncoa"; } # 1Password
     ];
