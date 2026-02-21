@@ -23,6 +23,12 @@
   };
   security.pam.services.sudo.u2fAuth = true;
 
+  # YubiKey touch detector — shows a KDE notification when the key needs to be touched
+  programs.yubikey-touch-detector = {
+    enable = true;
+    libnotify = true;  # fires native desktop notifications (KDE shows these as popups)
+  };
+
   # SSH access for remote administration
   services.openssh = {
     enable = true;
