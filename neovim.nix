@@ -51,10 +51,22 @@
       telescope = {
         enable = true;
         keymaps = {
-          "<leader>ff" = { action = "find_files"; options.desc = "Find files"; };
-          "<leader>fg" = { action = "live_grep"; options.desc = "Live grep"; };
-          "<leader>fb" = { action = "buffers"; options.desc = "Buffers"; };
-          "<leader>fh" = { action = "help_tags"; options.desc = "Help tags"; };
+          "<leader>ff" = {
+            action = "find_files";
+            options.desc = "Find files";
+          };
+          "<leader>fg" = {
+            action = "live_grep";
+            options.desc = "Live grep";
+          };
+          "<leader>fb" = {
+            action = "buffers";
+            options.desc = "Buffers";
+          };
+          "<leader>fh" = {
+            action = "help_tags";
+            options.desc = "Help tags";
+          };
         };
       };
 
@@ -68,12 +80,13 @@
       lsp = {
         enable = true;
         servers = {
-          nil_ls.enable = true;   # Nix
-          hls = {                 # Haskell
+          nil_ls.enable = true; # Nix
+          hls = {
+            # Haskell
             enable = true;
-            installGhc = false;   # GHC managed in home.packages
+            installGhc = false; # GHC managed in home.packages
           };
-          texlab.enable = true;   # LaTeX
+          texlab.enable = true; # LaTeX
           # Lean 4: leanls not yet ported to neovim's built-in LSP API;
           # use VS Code or add lean.nvim when upstream support lands.
         };
@@ -149,14 +162,54 @@
 
     # Keymaps
     keymaps = [
-      { key = "<leader>e"; action = "<cmd>Neotree toggle<cr>"; options.desc = "Toggle file explorer"; mode = "n"; }
-      { key = "<S-h>"; action = "<cmd>bprevious<cr>"; options.desc = "Previous buffer"; mode = "n"; }
-      { key = "<S-l>"; action = "<cmd>bnext<cr>"; options.desc = "Next buffer"; mode = "n"; }
-      { key = "<C-h>"; action = "<C-w>h"; options.desc = "Move to left window"; mode = "n"; }
-      { key = "<C-j>"; action = "<C-w>j"; options.desc = "Move to lower window"; mode = "n"; }
-      { key = "<C-k>"; action = "<C-w>k"; options.desc = "Move to upper window"; mode = "n"; }
-      { key = "<C-l>"; action = "<C-w>l"; options.desc = "Move to right window"; mode = "n"; }
-      { key = "<Esc>"; action = "<cmd>nohlsearch<cr>"; options.desc = "Clear search highlight"; mode = "n"; }
+      {
+        key = "<leader>e";
+        action = "<cmd>Neotree toggle<cr>";
+        options.desc = "Toggle file explorer";
+        mode = "n";
+      }
+      {
+        key = "<S-h>";
+        action = "<cmd>bprevious<cr>";
+        options.desc = "Previous buffer";
+        mode = "n";
+      }
+      {
+        key = "<S-l>";
+        action = "<cmd>bnext<cr>";
+        options.desc = "Next buffer";
+        mode = "n";
+      }
+      {
+        key = "<C-h>";
+        action = "<C-w>h";
+        options.desc = "Move to left window";
+        mode = "n";
+      }
+      {
+        key = "<C-j>";
+        action = "<C-w>j";
+        options.desc = "Move to lower window";
+        mode = "n";
+      }
+      {
+        key = "<C-k>";
+        action = "<C-w>k";
+        options.desc = "Move to upper window";
+        mode = "n";
+      }
+      {
+        key = "<C-l>";
+        action = "<C-w>l";
+        options.desc = "Move to right window";
+        mode = "n";
+      }
+      {
+        key = "<Esc>";
+        action = "<cmd>nohlsearch<cr>";
+        options.desc = "Clear search highlight";
+        mode = "n";
+      }
     ];
   };
 }

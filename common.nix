@@ -9,7 +9,13 @@ in
 {
   # Enable networking
   networking.networkmanager.enable = true;
-  networking.nameservers = [ "8.8.8.8" "1.1.1.1" ];
+  hardware.bluetooth.enable = true;
+  services.power-profiles-daemon.enable = true;
+  services.upower.enable = true;
+  networking.nameservers = [
+    "8.8.8.8"
+    "1.1.1.1"
+  ];
 
   # Set your time zone.
   time.timeZone = "Australia/Sydney";
@@ -23,6 +29,9 @@ in
   # Enable the KDE Plasma Desktop Environment.
   services.displayManager.sddm.enable = true;
   services.desktopManager.plasma6.enable = true;
+
+  # Niri — scrollable-tiling Wayland compositor (available as SDDM session alongside KDE)
+  programs.niri.enable = true;
 
   # Configure keymap in X11
   services.xserver.xkb.layout = "us";
@@ -43,7 +52,11 @@ in
   users.users.jsm = {
     isNormalUser = true;
     description = "Jonathan Merritt";
-    extraGroups = [ "networkmanager" "wheel" "_1password" ];
+    extraGroups = [
+      "networkmanager"
+      "wheel"
+      "_1password"
+    ];
     shell = pkgs.zsh;
   };
 
@@ -64,7 +77,7 @@ in
 
   # macOS-style keyboard shortcuts via xremap
   services.xremap = {
-    enable = true;
+    enable = false;
     serviceMode = "user";
     userName = "jsm";
     withKDE = true;
@@ -85,7 +98,9 @@ in
         # 1. Terminal overrides (Ghostty) — must be listed first
         {
           name = "Terminal (Ghostty)";
-          application = { only = [ "com.mitchellh.ghostty" ]; };
+          application = {
+            only = [ "com.mitchellh.ghostty" ];
+          };
           remap = {
             # Clipboard / window management (Ctrl+Shift variants for terminal)
             Super-c = "C-Shift-c";
@@ -128,7 +143,6 @@ in
             Super-f = "C-f";
             Super-w = "C-w";
             Super-q = "Alt-F4";
-            Super-t = "C-t";
             Super-n = "C-n";
           };
         }
@@ -169,10 +183,22 @@ in
     inherit (current.stylix) base16Scheme image polarity;
 
     fonts = {
-      monospace = { package = pkgs.nerd-fonts.jetbrains-mono; name = "JetBrainsMono Nerd Font Mono"; };
-      sansSerif = { package = pkgs.noto-fonts; name = "Noto Sans"; };
-      serif = { package = pkgs.noto-fonts; name = "Noto Serif"; };
-      emoji = { package = pkgs.noto-fonts-color-emoji; name = "Noto Color Emoji"; };
+      monospace = {
+        package = pkgs.nerd-fonts.jetbrains-mono;
+        name = "JetBrainsMono Nerd Font Mono";
+      };
+      sansSerif = {
+        package = pkgs.noto-fonts;
+        name = "Noto Sans";
+      };
+      serif = {
+        package = pkgs.noto-fonts;
+        name = "Noto Serif";
+      };
+      emoji = {
+        package = pkgs.noto-fonts-color-emoji;
+        name = "Noto Color Emoji";
+      };
     };
 
     fonts.sizes.terminal = 10.5;
@@ -196,7 +222,10 @@ in
     wget
   ];
 
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings.experimental-features = [
+    "nix-command"
+    "flakes"
+  ];
   nix.settings.auto-optimise-store = true;
   nix.settings.max-jobs = "auto";
   nix.settings.substituters = [
