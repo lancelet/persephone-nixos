@@ -10,6 +10,10 @@ in
   # Enable networking
   networking.networkmanager.enable = true;
   hardware.bluetooth.enable = true;
+
+  # Keyring for NetworkManager WiFi password storage (replaces kwallet from KDE)
+  services.gnome.gnome-keyring.enable = true;
+  security.pam.services.sddm.enableGnomeKeyring = true;
   services.power-profiles-daemon.enable = true;
   services.upower.enable = true;
   networking.nameservers = [
@@ -26,15 +30,15 @@ in
   # Enable the X11 windowing system.
   services.xserver.enable = true;
 
-  # Enable the KDE Plasma Desktop Environment.
+  # Display manager
   services.displayManager.sddm.enable = true;
-  services.desktopManager.plasma6.enable = true;
 
-  # Niri — scrollable-tiling Wayland compositor (available as SDDM session alongside KDE)
+  # Niri — scrollable-tiling Wayland compositor
   programs.niri.enable = true;
 
   # Configure keymap in X11
   services.xserver.xkb.layout = "us";
+  services.xserver.xkb.options = "caps:escape";
 
   # Enable CUPS to print documents.
   services.printing.enable = true;
@@ -73,108 +77,6 @@ in
   programs._1password-gui = {
     enable = true;
     polkitPolicyOwners = [ "jsm" ];
-  };
-
-  # macOS-style keyboard shortcuts via xremap
-  services.xremap = {
-    enable = false;
-    serviceMode = "user";
-    userName = "jsm";
-    withKDE = true;
-
-    config = {
-      # Single key remapping
-      modmap = [
-        {
-          name = "CapsLock to Escape";
-          remap = {
-            CapsLock = "Esc";
-          };
-        }
-      ];
-
-      # Combo remapping (first match wins)
-      keymap = [
-        # 1. Terminal overrides (Ghostty) — must be listed first
-        {
-          name = "Terminal (Ghostty)";
-          application = {
-            only = [ "com.mitchellh.ghostty" ];
-          };
-          remap = {
-            # Clipboard / window management (Ctrl+Shift variants for terminal)
-            Super-c = "C-Shift-c";
-            Super-v = "C-Shift-v";
-            Super-x = "C-Shift-x";
-            Super-t = "C-Shift-t";
-            Super-w = "C-Shift-w";
-            Super-n = "C-Shift-n";
-            Super-a = "C-Shift-a";
-            Super-f = "C-Shift-f";
-            Super-q = "C-Shift-q";
-            Super-z = "C-z";
-            Super-Shift-z = "C-y";
-            Super-s = "C-s";
-
-            # Text navigation (duplicated for self-containment)
-            Super-Left = "Home";
-            Super-Right = "End";
-            Super-Up = "C-Home";
-            Super-Down = "C-End";
-            Alt-Left = "C-Left";
-            Alt-Right = "C-Right";
-            Alt-Backspace = "C-Backspace";
-            Super-Shift-Left = "Shift-Home";
-            Super-Shift-Right = "Shift-End";
-          };
-        }
-
-        # 2. Global macOS-style editing shortcuts
-        {
-          name = "Global macOS shortcuts";
-          remap = {
-            Super-c = "C-c";
-            Super-v = "C-v";
-            Super-x = "C-x";
-            Super-z = "C-z";
-            Super-Shift-z = "C-y";
-            Super-a = "C-a";
-            Super-s = "C-s";
-            Super-f = "C-f";
-            Super-w = "C-w";
-            Super-q = "Alt-F4";
-            Super-n = "C-n";
-          };
-        }
-
-        # 3. Text navigation
-        {
-          name = "Text navigation";
-          remap = {
-            Super-Left = "Home";
-            Super-Right = "End";
-            Super-Up = "C-Home";
-            Super-Down = "C-End";
-            Alt-Left = "C-Left";
-            Alt-Right = "C-Right";
-            Alt-Backspace = "C-Backspace";
-            Super-Shift-Left = "Shift-Home";
-            Super-Shift-Right = "Shift-End";
-          };
-        }
-
-        # 4. Window management / KDE integration
-        {
-          name = "Window management";
-          remap = {
-            Super-Tab = "Alt-Tab";
-            Super-Space = "Alt-Space";
-            Super-LeftBrace = "Alt-Left";
-            Super-RightBrace = "Alt-Right";
-          };
-        }
-      ];
-    };
   };
 
   # Stylix — unified theming (Osaka Jade)

@@ -98,5 +98,18 @@
     )
   ];
 
+  fonts.fontconfig = {
+    antialias = true;
+    hinting = {
+      enable = true;
+      autohint = false;
+      style = "medium";
+    };
+    subpixel = {
+      rgba = "none";
+      lcdfilter = "none";
+    };
+  };
+
   system.stateVersion = "25.11";
 }

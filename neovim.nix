@@ -1,12 +1,11 @@
-# NixVim configuration — full IDE-like setup
-{ pkgs, ... }:
+# NixVim configuration — LazyVim-inspired IDE setup
+{ pkgs, config, ... }:
 
 {
   programs.nixvim = {
     enable = true;
     defaultEditor = true;
 
-    # General options
     opts = {
       number = true;
       relativenumber = true;
@@ -27,6 +26,15 @@
       undofile = true;
       splitright = true;
       splitbelow = true;
+      # Hide cmdline when not in use — noice shows it in a floating window,
+      # which is the signature LazyVim look.
+      cmdheight = 0;
+    };
+
+    highlight.IblIndent = {
+      # base01 is "lighter background" in base16 — perfect for subtle guides
+      fg = "#${config.lib.stylix.colors.base01}";
+      nocombine = true;
     };
 
     globals = {
@@ -35,7 +43,7 @@
     };
 
     plugins = {
-      # Icons (required by telescope, neo-tree, bufferline)
+      # Icons (required by telescope, neo-tree, bufferline, lualine, etc.)
       web-devicons.enable = true;
 
       # Statusline
@@ -67,16 +75,88 @@
             action = "help_tags";
             options.desc = "Help tags";
           };
+          "<leader>fr" = {
+            action = "oldfiles";
+            options.desc = "Recent files";
+          };
+          "<leader>fd" = {
+            action = "diagnostics";
+            options.desc = "Diagnostics";
+          };
         };
       };
 
-      # Treesitter
+      # Treesitter — include parsers required by noice
       treesitter = {
         enable = true;
         settings.highlight.enable = true;
+        grammarPackages = with pkgs.vimPlugins.nvim-treesitter.builtGrammars; [
+          bash
+          lua
+          nix
+          markdown
+          markdown_inline
+          vim
+          vimdoc
+          regex
+          python
+          javascript
+          typescript
+          json
+          yaml
+        ];
       };
 
-      # LSP
+      # ── LazyVim UI additions ──────────────────────────────────────────────
+
+      # Dashboard start screen — theme = "dashboard" gives nixvim a valid
+      # initial setup call; extraConfigLua below overrides with our custom
+      # NixOS snowflake header and buttons.
+      alpha = {
+        enable = true;
+        theme = "dashboard";
+      };
+
+      # Notification backend — noice routes vim.notify through this
+      notify = {
+        enable = true;
+        settings = {
+          render = "compact";
+          stages = "fade";
+        };
+      };
+
+      # Noice — replaces cmdline, search, and messages with floating windows.
+      # This is the single biggest visual difference vs plain neovim.
+      noice = {
+        enable = true;
+        settings = {
+          lsp = {
+            override = {
+              "vim.lsp.util.convert_input_to_markdown_lines" = true;
+              "vim.lsp.util.stylize_markdown" = true;
+              "cmp.entry.get_documentation" = true;
+            };
+          };
+          presets = {
+            bottom_search = true; # classic bottom search bar
+            command_palette = true; # cmdline + popup centred on screen
+            long_message_to_split = true; # long messages go to a split
+            inc_rename = false;
+            lsp_doc_border = true; # border on LSP hover/signature docs
+          };
+        };
+      };
+
+      # Highlight TODO / FIXME / NOTE / HACK comments
+      todo-comments.enable = true;
+
+      # Flash — enhanced f/t/s jump navigation (LazyVim default).
+      # Overrides s → jump, S → treesitter select. Use cl/cc instead of s/S.
+      flash.enable = true;
+
+      # ── LSP ──────────────────────────────────────────────────────────────
+
       lsp = {
         enable = true;
         servers = {
@@ -87,8 +167,6 @@
             installGhc = false; # GHC managed in home.packages
           };
           texlab.enable = true; # LaTeX
-          # Lean 4: leanls not yet ported to neovim's built-in LSP API;
-          # use VS Code or add lean.nvim when upstream support lands.
         };
         keymaps = {
           lspBuf = {
@@ -107,7 +185,8 @@
         };
       };
 
-      # Completion
+      # ── Completion ───────────────────────────────────────────────────────
+
       cmp = {
         enable = true;
         settings = {
@@ -137,18 +216,76 @@
       cmp_luasnip.enable = true;
       luasnip.enable = true;
 
-      # Git
-      gitsigns.enable = true;
+      # ── Editing ──────────────────────────────────────────────────────────
 
-      # Editing
+      gitsigns.enable = true;
       comment.enable = true;
       nvim-autopairs.enable = true;
       which-key.enable = true;
       indent-blankline.enable = true;
+
+      # mini.surround — gz prefix avoids conflict with flash's s mapping
+      mini = {
+        enable = true;
+        modules.surround = {
+          mappings = {
+            add = "gza";
+            delete = "gzd";
+            find = "gzf";
+            find_left = "gzF";
+            highlight = "gzh";
+            replace = "gzr";
+            update_n_lines = "gzn";
+          };
+        };
+      };
     };
 
-    # VS Code: use ASCII separators (status bar can't render Nerd Font icons)
     extraConfigLua = ''
+      -- Alpha dashboard — NixOS snowflake header with LazyVim-style buttons
+      local dashboard = require("alpha.themes.dashboard")
+      dashboard.section.header.val = {
+        "          ▗▄▄▄       ▗▄▄▄▄    ▄▄▄▖          ",
+        "          ▜███▙       ▜███▙  ▟███▛           ",
+        "           ▜███▙       ▜███▙▟███▛            ",
+        "            ▜███▙       ▜██████▛             ",
+        "     ▟█████████████████▙ ▜████▛     ▟▙       ",
+        "    ▟███████████████████▙ ▜███▙    ▟██▙      ",
+        "           ▄▄▄▄▖           ▜███▙  ▟███▛      ",
+        "          ▟███▛             ▜██▛ ▟███▛       ",
+        "         ▟███▛               ▜▛ ▟███▛        ",
+        "▟███████████▛                  ▟██████████▙  ",
+        "▜██████████▛                  ▟███████████▛  ",
+        "      ▟███▛ ▟▙               ▟███▛           ",
+        "     ▟███▛ ▟██▙             ▟███▛            ",
+        "    ▟███▛  ▜███▙           ▝▀▀▀▀             ",
+        "    ▜██▛    ▜███▙ ▜██████████████████▛       ",
+        "     ▜▛     ▟████▙ ▜████████████████▛        ",
+        "           ▟██████▙       ▜███▙              ",
+        "          ▟███▛▜███▙       ▜███▙             ",
+        "         ▟███▛  ▜███▙       ▜███▙            ",
+        "         ▝▀▀▀    ▀▀▀▀▘       ▀▀▀▘            ",
+      }
+      dashboard.section.buttons.val = {
+        dashboard.button("f", "  Find File",   ":Telescope find_files<CR>"),
+        dashboard.button("n", "  New File",    ":ene<CR>"),
+        dashboard.button("r", "  Recent",      ":Telescope oldfiles<CR>"),
+        dashboard.button("g", "  Grep Text",   ":Telescope live_grep<CR>"),
+        dashboard.button("q", "  Quit",        ":qa<CR>"),
+      }
+      require("alpha").setup(dashboard.config)
+
+      -- Which-key group names (replaces "+N keymaps" with readable labels)
+      require('which-key').add({
+        { "<leader>f", group = "Find" },
+        { "<leader>c", group = "Code" },
+        { "<leader>r", group = "Refactor" },
+        { "<leader>s", group = "Search" },
+        { "<leader>x", group = "Diagnostics" },
+        { "<leader>g", group = "Git" },
+      })
+
+      -- VS Code: use ASCII separators (status bar can't render Nerd Font icons)
       if vim.g.vscode then
         require('lualine').setup({
           options = {
@@ -160,14 +297,16 @@
       end
     '';
 
-    # Keymaps
     keymaps = [
+      # ── File explorer ─────────────────────────────────────────────────
       {
         key = "<leader>e";
         action = "<cmd>Neotree toggle<cr>";
         options.desc = "Toggle file explorer";
         mode = "n";
       }
+
+      # ── Buffer navigation ─────────────────────────────────────────────
       {
         key = "<S-h>";
         action = "<cmd>bprevious<cr>";
@@ -180,6 +319,8 @@
         options.desc = "Next buffer";
         mode = "n";
       }
+
+      # ── Window navigation ─────────────────────────────────────────────
       {
         key = "<C-h>";
         action = "<C-w>h";
@@ -204,10 +345,74 @@
         options.desc = "Move to right window";
         mode = "n";
       }
+
+      # ── Search ────────────────────────────────────────────────────────
       {
         key = "<Esc>";
         action = "<cmd>nohlsearch<cr>";
         options.desc = "Clear search highlight";
+        mode = "n";
+      }
+
+      # ── Flash navigation ──────────────────────────────────────────────
+      {
+        key = "s";
+        action.__raw = "function() require('flash').jump() end";
+        options.desc = "Flash jump";
+        mode = [
+          "n"
+          "x"
+          "o"
+        ];
+      }
+      {
+        key = "S";
+        action.__raw = "function() require('flash').treesitter() end";
+        options.desc = "Flash treesitter select";
+        mode = [
+          "n"
+          "x"
+          "o"
+        ];
+      }
+      {
+        key = "r";
+        action.__raw = "function() require('flash').remote() end";
+        options.desc = "Flash remote";
+        mode = "o";
+      }
+      {
+        key = "<C-s>";
+        action.__raw = "function() require('flash').toggle() end";
+        options.desc = "Toggle flash search";
+        mode = "c";
+      }
+
+      # ── TODO comments ─────────────────────────────────────────────────
+      {
+        key = "]t";
+        action.__raw = "function() require('todo-comments').jump_next() end";
+        options.desc = "Next TODO";
+        mode = "n";
+      }
+      {
+        key = "[t";
+        action.__raw = "function() require('todo-comments').jump_prev() end";
+        options.desc = "Prev TODO";
+        mode = "n";
+      }
+      {
+        key = "<leader>xt";
+        action = "<cmd>TodoTelescope<cr>";
+        options.desc = "TODOs";
+        mode = "n";
+      }
+
+      # ── Noice ─────────────────────────────────────────────────────────
+      {
+        key = "<leader>sn";
+        action = "<cmd>Noice<cr>";
+        options.desc = "Noice messages";
         mode = "n";
       }
     ];

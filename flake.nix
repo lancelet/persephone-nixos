@@ -17,11 +17,6 @@
       url = "github:nix-community/stylix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    plasma-manager = {
-      url = "github:nix-community/plasma-manager";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.home-manager.follows = "home-manager";
-    };
     niri.url = "github:sodiboo/niri-flake";
     noctalia-qs = {
       url = "github:noctalia-dev/noctalia-qs";
@@ -43,7 +38,6 @@
       xremap-flake,
       nixvim,
       stylix,
-      plasma-manager,
       niri,
       noctalia,
       noctalia-qs,
@@ -55,7 +49,6 @@
         home-manager.useUserPackages = true;
         home-manager.sharedModules = [
           nixvim.homeModules.nixvim
-          plasma-manager.homeModules.plasma-manager
           noctalia.homeModules.default
         ];
         home-manager.users.jsm = import ./home.nix;
