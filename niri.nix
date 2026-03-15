@@ -3,6 +3,9 @@
 # alacritty. Stylix handles focus-ring/border colours and cursor automatically.
 { ... }:
 
+let
+  cornerRadius = 12.0;
+in
 {
   programs.niri.settings = {
     prefer-no-csd = true;
@@ -17,12 +20,13 @@
       touchpad = {
         tap = false;
         natural-scroll = true;
+        scroll-factor = 0.25;
       };
       focus-follows-mouse.enable = true;
     };
 
     layout = {
-      gaps = 16;
+      gaps = 4;
       center-focused-column = "never";
       preset-column-widths = [
         { proportion = 0.33333; }
@@ -32,10 +36,46 @@
       default-column-width = {
         proportion = 0.5;
       };
+      border = {
+        width = 2;
+      };
+    };
+
+    window-rules = [
+      {
+        geometry-corner-radius = {
+          top-left = cornerRadius;
+          top-right = cornerRadius;
+          bottom-left = cornerRadius;
+          bottom-right = cornerRadius;
+        };
+        clip-to-geometry = true;
+      }
+    ];
+
+    overview = {
+      zoom = 0.33;
     };
 
     binds = {
       "Mod+Shift+Slash".action.show-hotkey-overlay = [ ];
+
+      "Alt+Tab" = {
+        repeat = false;
+        action.spawn = [
+          "niriswitcherctl"
+          "show"
+          "--window"
+        ];
+      };
+      "Alt+Shift+Tab" = {
+        repeat = false;
+        action.spawn = [
+          "niriswitcherctl"
+          "show"
+          "--window"
+        ];
+      };
 
       "Mod+T".action.spawn = "ghostty";
       "Mod+Space".action.spawn = "fuzzel";
@@ -220,6 +260,7 @@
 
     spawn-at-startup = [
       { command = [ "noctalia-shell" ]; }
+      { command = [ "niriswitcher" ]; }
     ];
 
     layer-rules = [

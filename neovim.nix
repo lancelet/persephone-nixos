@@ -1,10 +1,18 @@
 # NixVim configuration — LazyVim-inspired IDE setup
 { pkgs, config, ... }:
 
+let
+  theme = import ./theme.nix;
+  current = theme.${theme.active};
+in
 {
+  stylix.targets.nixvim.enable = false;
   programs.nixvim = {
     enable = true;
     defaultEditor = true;
+
+    colorscheme = current.neovim.colorscheme;
+    extraPlugins = [ pkgs.vimPlugins.${current.neovim.plugin} ];
 
     opts = {
       number = true;

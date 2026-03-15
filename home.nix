@@ -19,6 +19,9 @@ in
   home.homeDirectory = "/home/jsm";
   home.stateVersion = "25.11";
 
+  programs.fuzzel.enable = true;
+  programs.niriswitcher.enable = true;
+
   # Ghostty terminal
   programs.ghostty = {
     enable = true;
@@ -28,7 +31,8 @@ in
         "ctrl+shift+n=new_window"
         "ctrl+n=new_window"
       ];
-    };
+    }
+    // current.ghostty;
   };
 
   # Zsh
@@ -189,7 +193,6 @@ in
 
   # User packages
   home.packages = with pkgs; [
-    fuzzel
     gh
     jq
     tree
