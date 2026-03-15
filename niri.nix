@@ -37,7 +37,7 @@
       "Mod+Shift+Slash".action.show-hotkey-overlay = [ ];
 
       "Mod+T".action.spawn = "ghostty";
-      "Mod+D".action.spawn = "fuzzel";
+      "Mod+Space".action.spawn = "fuzzel";
       "Super+Alt+L".action.spawn = "swaylock";
 
       "XF86AudioRaiseVolume" = {

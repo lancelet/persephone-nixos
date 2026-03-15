@@ -153,7 +153,21 @@ in
   };
 
   # Noctalia shell (Quickshell-based panel, notifications, launcher, control centre)
-  programs.noctalia-shell.enable = true;
+  programs.noctalia-shell = {
+    enable = true;
+    settings = {
+      location.name = "Sydney";
+      bar.widgets.right = [
+        { id = "Tray"; }
+        { id = "NotificationHistory"; }
+        { id = "Battery"; }
+        { id = "Volume"; }
+        { id = "Brightness"; }
+        { id = "PowerProfile"; }
+        { id = "ControlCenter"; }
+      ];
+    };
+  };
 
   # Icon theme
   gtk.iconTheme = {
@@ -175,6 +189,7 @@ in
 
   # User packages
   home.packages = with pkgs; [
+    fuzzel
     gh
     jq
     tree

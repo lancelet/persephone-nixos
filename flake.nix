@@ -8,7 +8,6 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    xremap-flake.url = "github:xremap/nix-flake";
     nixvim = {
       url = "github:nix-community/nixvim";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -35,7 +34,6 @@
       nixpkgs,
       nixos-hardware,
       home-manager,
-      xremap-flake,
       nixvim,
       stylix,
       niri,
@@ -56,7 +54,6 @@
 
       commonModules = [
         ./common.nix
-        xremap-flake.nixosModules.default
         stylix.nixosModules.stylix
         home-manager.nixosModules.home-manager
         niri.nixosModules.niri
