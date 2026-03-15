@@ -18,6 +18,7 @@
         tap = false;
         natural-scroll = true;
       };
+      focus-follows-mouse.enable = true;
     };
 
     layout = {

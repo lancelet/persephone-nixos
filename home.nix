@@ -36,8 +36,8 @@ in
     enable = true;
     dotDir = "${config.xdg.configHome}/zsh";
     shellAliases = {
-      nrs = "pushd -q ~/persephone-nixos && sudo nixos-rebuild switch --flake .#$(hostname) ; popd -q";
-      nrsf = "pushd -q ~/persephone-nixos && sudo nixos-rebuild switch --fast --flake .#$(hostname) ; popd -q";
+      nrs = "pushd -q ~/persephone-nixos && nix fmt $(find . -name '*.nix') && sudo nixos-rebuild switch --flake .#$(hostname) ; popd -q";
+      nrsf = "pushd -q ~/persephone-nixos && nix fmt $(find . -name '*.nix') && sudo nixos-rebuild switch --fast --flake .#$(hostname) ; popd -q";
       nrf = "pushd -q ~/persephone-nixos && nix fmt $(find . -name '*.nix') ; popd -q";
     };
   };
