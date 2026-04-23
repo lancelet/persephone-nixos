@@ -126,8 +126,19 @@ in
     enable = true;
     profiles.default = {
       extensions =
-        (with pkgs.vscode-extensions; [
-          anthropic.claude-code
+        [
+          # nixpkgs 2.1.92 has a stale hash; override until nixpkgs bumps the version
+          (lib.throwIf
+            (pkgs.vscode-extensions.anthropic.claude-code.version != "2.1.92")
+            "nixpkgs claude-code is now ${pkgs.vscode-extensions.anthropic.claude-code.version} — remove the hash override in home.nix"
+            (pkgs.vscode-utils.extensionFromVscodeMarketplace {
+              name = "claude-code";
+              publisher = "anthropic";
+              version = "2.1.92";
+              sha256 = "sha256-f+6xXZVb5sYrmrH7eoon6/QoQaTnBuTnb+YnvszqyKA=";
+            }))
+        ]
+        ++ (with pkgs.vscode-extensions; [
           jnoortheen.nix-ide
           leanprover.lean4
           tamasfe.even-better-toml
