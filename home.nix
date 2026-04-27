@@ -20,7 +20,6 @@ in
   home.stateVersion = "25.11";
 
   programs.fuzzel.enable = true;
-  programs.niriswitcher.enable = true;
 
   # Ghostty terminal
   programs.ghostty = {
@@ -125,31 +124,32 @@ in
   programs.vscode = {
     enable = true;
     profiles.default = {
-      extensions =
-        [
-          # nixpkgs 2.1.92 has a stale hash; override until nixpkgs bumps the version
-          (lib.throwIf
-            (pkgs.vscode-extensions.anthropic.claude-code.version != "2.1.92")
-            "nixpkgs claude-code is now ${pkgs.vscode-extensions.anthropic.claude-code.version} — remove the hash override in home.nix"
-            (pkgs.vscode-utils.extensionFromVscodeMarketplace {
+      extensions = [
+        # nixpkgs 2.1.114 has a stale hash; override until nixpkgs bumps the version
+        (lib.throwIf (pkgs.vscode-extensions.anthropic.claude-code.version != "2.1.114")
+          "nixpkgs claude-code is now ${pkgs.vscode-extensions.anthropic.claude-code.version} — remove the hash override in home.nix"
+          (
+            pkgs.vscode-utils.extensionFromVscodeMarketplace {
               name = "claude-code";
               publisher = "anthropic";
-              version = "2.1.92";
-              sha256 = "sha256-f+6xXZVb5sYrmrH7eoon6/QoQaTnBuTnb+YnvszqyKA=";
-            }))
-        ]
-        ++ (with pkgs.vscode-extensions; [
-          jnoortheen.nix-ide
-          leanprover.lean4
-          tamasfe.even-better-toml
-          haskell.haskell
-          justusadam.language-haskell
-          james-yu.latex-workshop
-          asvetliakov.vscode-neovim
-        ])
-        ++ lib.optional (current ? vscode) (
-          pkgs.vscode-utils.extensionFromVscodeMarketplace current.vscode.extension
-        );
+              version = "2.1.114";
+              sha256 = "sha256-TfVradC9ZjfLBp8QvZ0AptCS9j2ogzSlsRXxksp+N9I=";
+            }
+          )
+        )
+      ]
+      ++ (with pkgs.vscode-extensions; [
+        jnoortheen.nix-ide
+        leanprover.lean4
+        tamasfe.even-better-toml
+        haskell.haskell
+        justusadam.language-haskell
+        james-yu.latex-workshop
+        asvetliakov.vscode-neovim
+      ])
+      ++ lib.optional (current ? vscode) (
+        pkgs.vscode-utils.extensionFromVscodeMarketplace current.vscode.extension
+      );
       userSettings = {
         "telemetry.telemetryLevel" = "off";
         "editor.minimap.enabled" = false;
@@ -189,6 +189,8 @@ in
     package = pkgs.papirus-icon-theme;
     name = "Papirus-Dark";
   };
+  # Adopt home-manager's new default (was `config.gtk.theme` pre-26.05).
+  gtk.gtk4.theme = null;
 
   # Ensure nvim data directory exists (neo-tree needs it for logging on first launch)
   xdg.enable = true;
