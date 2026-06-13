@@ -1,91 +1,31 @@
+# Home Manager configuration for jsm.
+#
+# Minimal by design. Add user packages to home.packages, program modules as
+# `programs.<name>`, and declarative KDE settings under `programs.plasma`.
+
 {
-  config,
+  inputs,
   pkgs,
-  lib,
   ...
 }:
 
-let
-  theme = import ./theme.nix;
-  current = theme.${theme.active};
-in
 {
-  imports = [
-    ./neovim.nix
-    ./niri.nix
-  ];
+  imports = [ inputs.zen-browser.homeModules.beta ];
 
   home.username = "jsm";
   home.homeDirectory = "/home/jsm";
   home.stateVersion = "25.11";
 
-  programs.fuzzel.enable = true;
-
-  # Ghostty terminal
-  programs.ghostty = {
-    enable = true;
-    settings = {
-      font-family = "JetBrainsMonoNL Nerd Font Mono";
-      keybind = [
-        "ctrl+shift+n=new_window"
-        "ctrl+n=new_window"
-      ];
-    }
-    // current.ghostty;
-  };
-
-  # Zsh
   programs.zsh = {
     enable = true;
-    dotDir = "${config.xdg.configHome}/zsh";
     shellAliases = {
-      nrs = "pushd -q ~/persephone-nixos && nix fmt $(find . -name '*.nix') && sudo nixos-rebuild switch --flake .#$(hostname) ; popd -q";
-      nrsf = "pushd -q ~/persephone-nixos && nix fmt $(find . -name '*.nix') && sudo nixos-rebuild switch --fast --flake .#$(hostname) ; popd -q";
-      nrf = "pushd -q ~/persephone-nixos && nix fmt $(find . -name '*.nix') ; popd -q";
+      # Build the current host's config without activating it.
+      nrb = "nixos-rebuild build --flake ~/persephone-nixos#$(hostname)";
+      # Format the flake, then build and switch.
+      nrs = "nix fmt ~/persephone-nixos && sudo nixos-rebuild switch --flake ~/persephone-nixos#$(hostname)";
     };
   };
 
-  # Starship prompt (Omarchy-style minimal)
-  programs.starship = {
-    enable = true;
-    enableZshIntegration = true;
-    settings = {
-      add_newline = true;
-      command_timeout = 200;
-      format = "[$directory$git_branch$git_status]($style)$character";
-      character = {
-        error_symbol = "[✗](bold cyan)";
-        success_symbol = "[❯](bold cyan)";
-      };
-      directory = {
-        truncation_length = 2;
-        truncation_symbol = "…/";
-        repo_root_style = "bold cyan";
-        repo_root_format = "[$repo_root]($repo_root_style)[$path]($style)[$read_only]($read_only_style) ";
-      };
-      git_branch = {
-        format = "[$branch]($style) ";
-        style = "italic cyan";
-      };
-      git_status = {
-        format = "[$all_status$ahead_behind]($style)";
-        style = "cyan";
-        ahead = "⇡\${count} ";
-        diverged = "⇕⇡\${ahead_count}⇣\${behind_count} ";
-        behind = "⇣\${count} ";
-        conflicted = " ";
-        up_to_date = " ";
-        untracked = "? ";
-        modified = " ";
-        stashed = "";
-        staged = "";
-        renamed = "";
-        deleted = "";
-      };
-    };
-  };
-
-  # Git
   programs.git = {
     enable = true;
     settings.user = {
@@ -94,135 +34,61 @@ in
     };
   };
 
-  # Atuin - shell history
-  programs.atuin = {
+  # Atuin: magical shell history (Ctrl-R search, etc.). Zsh integration is
+  # enabled by default.
+  programs.atuin.enable = true;
+
+  # Declarative KDE Plasma configuration.
+  # See https://nix-community.github.io/plasma-manager/
+  programs.plasma = {
     enable = true;
-    enableZshIntegration = true;
+    # Standard Breeze Dark. Owning this here overwrites the orphaned Stylix /
+    # OsakaJade (green) theming left in ~/.config by the previous setup.
+    workspace = {
+      colorScheme = "BreezeDark";
+      lookAndFeel = "org.kde.breezedark.desktop";
+    };
+    # Mouse tuning. IDs are hex (plasma-manager converts to the decimal KDE
+    # stores); "default" is the adaptive acceleration profile.
+    input.mice = [
+      {
+        name = "Logitech G502";
+        vendorId = "046d";
+        productId = "407f";
+        acceleration = -0.8;
+        accelerationProfile = "default";
+        naturalScroll = true;
+      }
+    ];
   };
 
-  # Direnv
-  programs.direnv = {
-    enable = true;
-    enableZshIntegration = true;
-    nix-direnv.enable = true;
-  };
-
-  # Tmux
-  programs.tmux = {
-    enable = true;
-    mouse = true;
-    terminal = "tmux-256color";
-    baseIndex = 1;
-    escapeTime = 0;
-    keyMode = "vi";
-    # Use the largest attached client's dimensions so resizing one Ghostty
-    # window doesn't constrain other windows sharing the same session.
-    extraConfig = "set -g window-size largest";
-  };
-
-  # VS Code
-  programs.vscode = {
+  # VSCodium with extensions managed declaratively. Uses the dedicated
+  # programs.vscodium module so config lands in VSCodium's own paths
+  # (programs.vscode now always writes to upstream VS Code's paths).
+  programs.vscodium = {
     enable = true;
     profiles.default = {
-      extensions = [
-        # nixpkgs 2.1.114 has a stale hash; override until nixpkgs bumps the version
-        (lib.throwIf (pkgs.vscode-extensions.anthropic.claude-code.version != "2.1.114")
-          "nixpkgs claude-code is now ${pkgs.vscode-extensions.anthropic.claude-code.version} — remove the hash override in home.nix"
-          (
-            pkgs.vscode-utils.extensionFromVscodeMarketplace {
-              name = "claude-code";
-              publisher = "anthropic";
-              version = "2.1.114";
-              sha256 = "sha256-TfVradC9ZjfLBp8QvZ0AptCS9j2ogzSlsRXxksp+N9I=";
-            }
-          )
-        )
-      ]
-      ++ (with pkgs.vscode-extensions; [
-        jnoortheen.nix-ide
-        leanprover.lean4
-        tamasfe.even-better-toml
-        haskell.haskell
-        justusadam.language-haskell
-        james-yu.latex-workshop
-        asvetliakov.vscode-neovim
-      ])
-      ++ lib.optional (current ? vscode) (
-        pkgs.vscode-utils.extensionFromVscodeMarketplace current.vscode.extension
-      );
+      extensions = with pkgs.vscode-extensions; [
+        vscodevim.vim # Vim keybindings
+        jnoortheen.nix-ide # Nix syntax highlighting + LSP
+        leanprover.lean4 # Lean 4 language support
+      ];
       userSettings = {
-        "telemetry.telemetryLevel" = "off";
-        "editor.minimap.enabled" = false;
-        "editor.rulers" = [
-          80
-          120
-        ];
-        "extensions.experimental.affinity" = {
-          "asvetliakov.vscode-neovim" = 1;
-        };
-      }
-      // lib.optionalAttrs (current ? vscode) {
-        "workbench.colorTheme" = lib.mkForce current.vscode.themeName;
+        # Drive nix-ide's language features with nil (provided below).
+        "nix.enableLanguageServer" = true;
+        "nix.serverPath" = "${pkgs.nil}/bin/nil";
       };
     };
   };
 
-  # Noctalia shell (Quickshell-based panel, notifications, launcher, control centre)
-  programs.noctalia-shell = {
-    enable = true;
-    settings = {
-      location.name = "Sydney";
-      bar.widgets.right = [
-        { id = "Tray"; }
-        { id = "NotificationHistory"; }
-        { id = "Battery"; }
-        { id = "Volume"; }
-        { id = "Brightness"; }
-        { id = "PowerProfile"; }
-        { id = "ControlCenter"; }
-      ];
-    };
-  };
+  # Zen browser (module imported above). Native-Wayland; pairs with the
+  # system-level 1Password browser trust configured in common.nix.
+  programs.zen-browser.enable = true;
 
-  # Icon theme
-  gtk.iconTheme = {
-    package = pkgs.papirus-icon-theme;
-    name = "Papirus-Dark";
-  };
-  # Adopt home-manager's new default (was `config.gtk.theme` pre-26.05).
-  gtk.gtk4.theme = null;
-
-  # Ensure nvim data directory exists (neo-tree needs it for logging on first launch)
-  xdg.enable = true;
-  home.file.".local/share/nvim/.keep".text = "";
-
-  # Brave browser with extensions
-  programs.brave = {
-    enable = true;
-    extensions = [
-      { id = "aeblfdkhhhdcdjpifhhbdiojplfjncoa"; } # 1Password
-    ];
-  };
-
-  # User packages
+  # User packages.
   home.packages = with pkgs; [
-    gh
-    jq
-    tree
-    ripgrep
-    fd
-    bat
-    btop
-
-    # Lean
-    elan
-
-    # Haskell
-    ghc
-    cabal-install
-    haskell-language-server
-
-    # LaTeX
-    texlive.combined.scheme-full
+    nil # Nix language server (used by nix-ide above)
+    elan # Lean toolchain manager (used by the Lean 4 extension)
+    google-chrome # 1Password-trusted by default; native Wayland via NIXOS_OZONE_WL
   ];
 }

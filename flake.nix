@@ -8,60 +8,41 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    nixvim = {
-      url = "github:nix-community/nixvim";
+    plasma-manager = {
+      url = "github:nix-community/plasma-manager";
       inputs.nixpkgs.follows = "nixpkgs";
+      inputs.home-manager.follows = "home-manager";
     };
-    stylix = {
-      url = "github:nix-community/stylix";
+    zen-browser = {
+      url = "github:0xc000022070/zen-browser-flake";
       inputs.nixpkgs.follows = "nixpkgs";
-    };
-    niri.url = "github:sodiboo/niri-flake";
-    noctalia-qs = {
-      url = "github:noctalia-dev/noctalia-qs";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-    noctalia = {
-      url = "github:noctalia-dev/noctalia-shell";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.noctalia-qs.follows = "noctalia-qs";
+      inputs.home-manager.follows = "home-manager";
     };
   };
 
   outputs =
-    {
-      self,
+    inputs@{
       nixpkgs,
       nixos-hardware,
       home-manager,
-      nixvim,
-      stylix,
-      niri,
-      noctalia,
-      noctalia-qs,
+      plasma-manager,
       ...
     }:
     let
-      homeManagerConfig = {
-        home-manager.useGlobalPkgs = true;
-        home-manager.useUserPackages = true;
-        home-manager.sharedModules = [
-          nixvim.homeModules.nixvim
-          noctalia.homeModules.default
-        ];
-        home-manager.users.jsm = import ./home.nix;
-      };
-
       commonModules = [
         ./common.nix
-        stylix.nixosModules.stylix
         home-manager.nixosModules.home-manager
-        niri.nixosModules.niri
-        homeManagerConfig
+        {
+          home-manager.useGlobalPkgs = true;
+          home-manager.useUserPackages = true;
+          home-manager.extraSpecialArgs = { inherit inputs; };
+          home-manager.sharedModules = [ plasma-manager.homeModules.plasma-manager ];
+          home-manager.users.jsm = import ./home.nix;
+        }
       ];
     in
     {
-      formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixfmt;
+      formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixfmt-tree;
 
       nixosConfigurations.persephone = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";

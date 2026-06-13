@@ -1,49 +1,38 @@
 # Shared NixOS configuration for all machines.
+#
+# Deliberately minimal: a bootable KDE Plasma 6 desktop with networking,
+# audio, and the jsm user. Add anything else either here (system-wide) or in
+# home.nix (per-user).
 
 { pkgs, ... }:
 
-let
-  theme = import ./theme.nix;
-  current = theme.${theme.active};
-in
 {
-  # Enable networking
+  # Networking
   networking.networkmanager.enable = true;
-  hardware.bluetooth.enable = true;
-
-  # Keyring for NetworkManager WiFi password storage (replaces kwallet from KDE)
-  services.gnome.gnome-keyring.enable = true;
-  security.pam.services.sddm.enableGnomeKeyring = true;
-  services.power-profiles-daemon.enable = true;
-  services.upower.enable = true;
   networking.nameservers = [
     "8.8.8.8"
     "1.1.1.1"
   ];
+  hardware.bluetooth.enable = true;
 
-  # Set your time zone.
+  # Power management
+  services.power-profiles-daemon.enable = true;
+  services.upower.enable = true;
+
+  # Locale / time
   time.timeZone = "Australia/Sydney";
-
-  # Select internationalisation properties.
   i18n.defaultLocale = "en_AU.UTF-8";
 
-  # Enable the X11 windowing system.
-  services.xserver.enable = true;
-
-  # Display manager
-  services.displayManager.sddm.enable = true;
-
-  # Niri — scrollable-tiling Wayland compositor
-  programs.niri.enable = true;
-
-  # Configure keymap in X11
+  # Keyboard (applies to console and the Wayland session)
   services.xserver.xkb.layout = "us";
   services.xserver.xkb.options = "caps:escape";
 
-  # Enable CUPS to print documents.
-  services.printing.enable = true;
+  # KDE Plasma 6 desktop on Wayland, with the SDDM display manager.
+  services.displayManager.sddm.enable = true;
+  services.displayManager.sddm.wayland.enable = true;
+  services.desktopManager.plasma6.enable = true;
 
-  # Enable sound with pipewire.
+  # Audio (PipeWire)
   security.rtkit.enable = true;
   services.pipewire = {
     enable = true;
@@ -52,92 +41,51 @@ in
     pulse.enable = true;
   };
 
-  # Define a user account. Don't forget to set a password with 'passwd'.
+  # User account. Set a password with `passwd` after first switch.
   users.users.jsm = {
     isNormalUser = true;
     description = "Jonathan Merritt";
     extraGroups = [
       "networkmanager"
       "wheel"
-      "_1password"
     ];
     shell = pkgs.zsh;
   };
-
   programs.zsh.enable = true;
 
-  # Install firefox.
-  programs.firefox.enable = true;
-
-  # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
 
-  # 1Password
+  # Run Chromium/Electron apps (VSCode, etc.) as native Wayland so they render
+  # crisply at fractional display scaling instead of being bitmap-scaled.
+  environment.sessionVariables.NIXOS_OZONE_WL = "1";
+
+  # 1Password (CLI + GUI). polkitPolicyOwners lets jsm authenticate system
+  # integration (e.g. unlock with fingerprint / system auth).
   programs._1password.enable = true;
   programs._1password-gui = {
     enable = true;
     polkitPolicyOwners = [ "jsm" ];
   };
-
-  # Stylix — unified theming (Osaka Jade)
-  stylix = {
-    enable = true;
-    inherit (current.stylix) base16Scheme image polarity;
-
-    fonts = {
-      monospace = {
-        package = pkgs.nerd-fonts.jetbrains-mono;
-        name = "JetBrainsMono Nerd Font Mono";
-      };
-      sansSerif = {
-        package = pkgs.noto-fonts;
-        name = "Noto Sans";
-      };
-      serif = {
-        package = pkgs.noto-fonts;
-        name = "Noto Serif";
-      };
-      emoji = {
-        package = pkgs.noto-fonts-color-emoji;
-        name = "Noto Color Emoji";
-      };
-    };
-
-    fonts.sizes.terminal = 10.5;
-
-    cursor = {
-      package = pkgs.bibata-cursors;
-      name = "Bibata-Modern-Classic";
-      size = 24;
-    };
+  # Zen isn't on 1Password's built-in browser allowlist, so trust its wrapped
+  # binary explicitly to enable the browser-extension integration.
+  environment.etc."1password/custom_allowed_browsers" = {
+    text = ".zen-wrapped";
+    mode = "0755";
   };
 
-  # Fonts
-  fonts.packages = with pkgs; [
-    nerd-fonts.jetbrains-mono
-  ];
-
-  # System packages
+  # A bare handful of system tools. Per-user packages live in home.nix.
   environment.systemPackages = with pkgs; [
-    pciutils
     curl
     wget
+    git
   ];
 
+  # Nix daemon settings
   nix.settings.experimental-features = [
     "nix-command"
     "flakes"
   ];
   nix.settings.auto-optimise-store = true;
-  nix.settings.max-jobs = "auto";
-  nix.settings.substituters = [
-    "https://cuda-maintainers.cachix.org"
-    "https://nix-community.cachix.org"
-  ];
-  nix.settings.trusted-public-keys = [
-    "cuda-maintainers.cachix.org-1:0dq3bujKpuEPMCX6U4WylrUDZ9JyUG0VpVZa7CNfq5E="
-    "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-  ];
   nix.gc = {
     automatic = true;
     dates = "weekly";
