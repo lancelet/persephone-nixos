@@ -1,6 +1,10 @@
 # NixOS configuration for persephone (Framework 16, AMD AI 300 + RTX 5070)
 
-{ lib, pkgs, ... }:
+{
+  lib,
+  pkgs,
+  ...
+}:
 
 {
   imports = [ ./hardware-configuration.nix ];

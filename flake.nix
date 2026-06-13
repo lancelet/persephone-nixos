@@ -46,6 +46,7 @@
 
       nixosConfigurations.persephone = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
+        specialArgs = { inherit inputs; };
         modules = commonModules ++ [
           nixos-hardware.nixosModules.framework-16-amd-ai-300-series-nvidia
           ./hosts/persephone/default.nix
@@ -54,6 +55,7 @@
 
       nixosConfigurations.hercules = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
+        specialArgs = { inherit inputs; };
         modules = commonModules ++ [
           ./hosts/hercules/default.nix
         ];

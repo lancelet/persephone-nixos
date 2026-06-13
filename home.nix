@@ -60,6 +60,14 @@
         naturalScroll = true;
       }
     ];
+    # macOS Spotlight-style launcher: Meta+Space opens KRunner (kept alongside
+    # the default Alt+Space). FreeFloating makes KRunner a centred floating box
+    # rather than docking to the top edge of the screen.
+    shortcuts."org.kde.krunner.desktop"."_launch" = [
+      "Alt+Space"
+      "Meta+Space"
+    ];
+    configFile.krunnerrc.General.FreeFloating = true;
   };
 
   # VSCodium with extensions managed declaratively. Uses the dedicated
@@ -77,6 +85,10 @@
         # Drive nix-ide's language features with nil (provided below).
         "nix.enableLanguageServer" = true;
         "nix.serverPath" = "${pkgs.nil}/bin/nil";
+        # Dispatch keys by OS-translated keyCode rather than physical key
+        # position, so the system caps:escape remap (common.nix) reaches the
+        # editor — required for CapsLock-as-Esc to work with Vim mode.
+        "keyboard.dispatch" = "keyCode";
       };
     };
   };
