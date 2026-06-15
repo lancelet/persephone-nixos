@@ -92,6 +92,21 @@
     configFile.krunnerrc.General.FreeFloating = true;
   };
 
+  # Konsole: a declarative profile using the same JetBrains Mono coding font as
+  # VSCodium (jetbrains-mono pkg in home.packages). Konsole's built-in default
+  # profile can't be edited in place, so we own a named profile and default to it.
+  programs.konsole = {
+    enable = true;
+    defaultProfile = "JetBrains";
+    profiles.JetBrains = {
+      name = "JetBrains";
+      font = {
+        name = "JetBrains Mono";
+        size = 11;
+      };
+    };
+  };
+
   # VSCodium with extensions managed declaratively. Uses the dedicated
   # programs.vscodium module so config lands in VSCodium's own paths
   # (programs.vscode now always writes to upstream VS Code's paths).
