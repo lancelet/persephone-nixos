@@ -28,15 +28,37 @@
 
   programs.git = {
     enable = true;
-    settings.user = {
-      name = "Jonathan Merritt";
-      email = "j.s.merritt@gmail.com";
+    settings = {
+      user = {
+        name = "Jonathan Merritt";
+        email = "j.s.merritt@gmail.com";
+      };
+      # Use Neovim for commit messages, interactive rebase, etc.
+      core.editor = "nvim";
     };
+  };
+
+  # Neovim, set as the default editor ($EDITOR=nvim), with vi/vim aliases.
+  programs.neovim = {
+    enable = true;
+    defaultEditor = true;
+    viAlias = true;
+    vimAlias = true;
   };
 
   # Atuin: magical shell history (Ctrl-R search, etc.). Zsh integration is
   # enabled by default.
   programs.atuin.enable = true;
+
+  # direnv: per-directory environments loaded automatically on `cd`. nix-direnv
+  # provides the `use flake` stdlib function and caches the dev shell so it
+  # doesn't re-evaluate on every entry. Zsh integration is on by default, so a
+  # project `.envrc` containing `use flake` activates that flake's dev shell
+  # once `direnv allow` has been run there.
+  programs.direnv = {
+    enable = true;
+    nix-direnv.enable = true;
+  };
 
   # Declarative KDE Plasma configuration.
   # See https://nix-community.github.io/plasma-manager/
@@ -75,20 +97,41 @@
   # (programs.vscode now always writes to upstream VS Code's paths).
   programs.vscodium = {
     enable = true;
+    # Let home-manager own extensions/extensions.json (the manifest VSCodium uses
+    # to decide which extensions to activate). Left mutable (the default),
+    # VSCodium rewrites it and it drifts out of sync with the declaratively
+    # symlinked extension folders — which silently dropped nix-ide and killed
+    # Nix syntax highlighting. Immutable keeps the manifest == the list below.
+    mutableExtensionsDir = false;
     profiles.default = {
       extensions = with pkgs.vscode-extensions; [
         vscodevim.vim # Vim keybindings
         jnoortheen.nix-ide # Nix syntax highlighting + LSP
         leanprover.lean4 # Lean 4 language support
+        mkhl.direnv # feed direnv/flake dev-shell env (cc, toolchain) to the Lean server
+        catppuccin.catppuccin-vsc # Catppuccin colour themes (Mocha/Latte/Frappé/Macchiato)
+        stkb.rewrap # Alt+Q hard-wraps the paragraph/selection at the ruler column
       ];
       userSettings = {
         # Drive nix-ide's language features with nil (provided below).
         "nix.enableLanguageServer" = true;
         "nix.serverPath" = "${pkgs.nil}/bin/nil";
+        # Reload the direnv environment automatically when .envrc/flake change,
+        # so the Lean 4 server always sees the project's dev shell.
+        "direnv.restart.automatic" = true;
         # Dispatch keys by OS-translated keyCode rather than physical key
         # position, so the system caps:escape remap (common.nix) reaches the
         # editor — required for CapsLock-as-Esc to work with Vim mode.
         "keyboard.dispatch" = "keyCode";
+
+        # Appearance and editing.
+        "workbench.colorTheme" = "Catppuccin Mocha";
+        "editor.fontFamily" = "'JetBrains Mono', monospace"; # coding font (pkg below)
+        "editor.fontLigatures" = true; # JetBrains Mono's programming ligatures (->, =>, ==)
+        "editor.minimap.enabled" = false; # no code-preview strip on the right
+        "editor.wordWrap" = "bounded"; # soft-wrap long lines …
+        "editor.wordWrapColumn" = 100; # … at column 100 (or the window edge)
+        "editor.rulers" = [ 100 ]; # vertical guide at the wrap column
       };
     };
   };
@@ -97,10 +140,15 @@
   # system-level 1Password browser trust configured in common.nix.
   programs.zen-browser.enable = true;
 
+  # Let home-manager manage a user fontconfig so fonts in home.packages (below)
+  # are discoverable by apps like VSCodium.
+  fonts.fontconfig.enable = true;
+
   # User packages.
   home.packages = with pkgs; [
     nil # Nix language server (used by nix-ide above)
     elan # Lean toolchain manager (used by the Lean 4 extension)
     google-chrome # 1Password-trusted by default; native Wayland via NIXOS_OZONE_WL
+    jetbrains-mono # editor coding font (see editor.fontFamily above)
   ];
 }
