@@ -35,6 +35,11 @@
         {
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
+          # Move aside any pre-existing file/dir that a generation wants to own
+          # (e.g. VSCodium's mutable ~/.vscode-oss/extensions) instead of
+          # aborting activation. Without this, switching to an immutable
+          # extensions dir silently fails and no home config applies.
+          home-manager.backupFileExtension = "backup";
           home-manager.extraSpecialArgs = { inherit inputs; };
           home-manager.sharedModules = [ plasma-manager.homeModules.plasma-manager ];
           home-manager.users.jsm = import ./home.nix;

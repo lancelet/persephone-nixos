@@ -108,6 +108,7 @@
         vscodevim.vim # Vim keybindings
         jnoortheen.nix-ide # Nix syntax highlighting + LSP
         leanprover.lean4 # Lean 4 language support
+        tamasfe.even-better-toml # required dependency of lean4 (not auto-installed for Nix-managed extensions)
         mkhl.direnv # feed direnv/flake dev-shell env (cc, toolchain) to the Lean server
         catppuccin.catppuccin-vsc # Catppuccin colour themes (Mocha/Latte/Frappé/Macchiato)
         stkb.rewrap # Alt+Q hard-wraps the paragraph/selection at the ruler column
@@ -123,6 +124,9 @@
         # position, so the system caps:escape remap (common.nix) reaches the
         # editor — required for CapsLock-as-Esc to work with Vim mode.
         "keyboard.dispatch" = "keyCode";
+        # Route Vim's unnamed register to the system clipboard, so a plain
+        # `y` yank (and `d`/`x` deletes) copies out and `p` pastes from it.
+        "vim.useSystemClipboard" = true;
 
         # Appearance and editing.
         "workbench.colorTheme" = "Catppuccin Mocha";
