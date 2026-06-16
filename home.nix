@@ -129,10 +129,17 @@
     # Catppuccin Mocha (Mauve accent) colour scheme. The scheme file ships in the
     # catppuccin-kde package (home.packages below); "CatppuccinMochaMauve" is the
     # basename of its .colors file. We keep the breezedark look-and-feel (dark
-    # Plasma theme + window decorations) and only override the colours, rather
-    # than applying Catppuccin's full global theme — staying close to stock per
-    # the desktop direction. Owning this here also overwrites any orphaned prior
-    # theming.
+    # Plasma theme) and only override the colours, rather than applying
+    # Catppuccin's full global theme — staying close to stock per the desktop
+    # direction. Owning this here also overwrites any orphaned prior theming.
+    #
+    # windowDecorations swaps the title bars from Breeze to Klassy (binary
+    # KDecoration plugin in home.packages below; library "org.kde.klassy", theme
+    # "Klassy"). This is purely the *decoration* — title bar, borders, and
+    # close/min/max buttons — so it's orthogonal to widgetStyle: scrollbars and
+    # other widget internals stay with Kvantum. Klassy also ships an application
+    # *style* (klassy6.so), but we deliberately do NOT select it via widgetStyle,
+    # which would clobber the Kvantum overlay scrollbars below.
     #
     # widgetStyle = "kvantum" swaps the Qt *application style* from Breeze to
     # Kvantum (engine + Catppuccin Mocha/Mauve Kvantum theme in home.packages
@@ -146,6 +153,34 @@
       colorScheme = "CatppuccinMochaMauve";
       lookAndFeel = "org.kde.breezedark.desktop";
       widgetStyle = "kvantum";
+      windowDecorations = {
+        library = "org.kde.klassy";
+        theme = "Klassy";
+      };
+      # Desktop wallpaper: a Catppuccin-Mocha-recoloured astronaut scene from
+      # orangci's wallpaper repo (palette-matched to the Mauve accent). Fetched
+      # into the Nix store by hash so it's reproducible — no loose file to lose,
+      # and the build fails loudly if the upstream image ever changes. Swap by
+      # editing the url + hash (get the new hash from `nix store prefetch-file`).
+      wallpaper = pkgs.fetchurl {
+        url = "https://raw.githubusercontent.com/orangci/walls-catppuccin-mocha/master/astronaut.png";
+        hash = "sha256-fsE/tDzlt1gP7mu3ueJU7IDhxOZRDYDVezHviBkzKlk=";
+      };
+    };
+
+    # Power management: have KDE (PowerDevil) auto-switch power-profiles-daemon
+    # profiles by power source — full Performance on AC, Power Saver on battery
+    # (and on low battery). This is the AC-vs-battery split; the dGPU's RTD3
+    # power-off (hosts/persephone) does the heavy lifting for unplugged runtime.
+    # dimDisplay on battery is a safe extra saver. (No-op on a desktop like
+    # hercules, which has no battery.) "powerSaving" maps to PPD's power-saver.
+    powerdevil = {
+      AC.powerProfile = "performance";
+      battery = {
+        powerProfile = "powerSaving";
+        dimDisplay.enable = true;
+      };
+      lowBattery.powerProfile = "powerSaving";
     };
     # Mouse tuning. IDs are hex (plasma-manager converts to the decimal KDE
     # stores); "default" is the adaptive acceleration profile.
@@ -201,6 +236,71 @@
     theme=catppuccin-mocha-mauve
   '';
 
+  # Klassy window-decoration settings, baked from the GUI config (Klassy KCM →
+  # Configure). The "Klassy" theme selected in programs.plasma.workspace.
+  # windowDecorations reads this on startup; without it Klassy falls back to its
+  # built-in defaults. Tuned look: small-circle traffic-light buttons (accent
+  # colours, Oxygen icons), 6px window-corner radius, 8px side / 6px top-bottom
+  # title-bar margins. Klassy stores config under ~/.config/klassy/ (subdir), so
+  # the path is "klassy/klassyrc" — managing it here makes it a read-only symlink
+  # into the store; re-tune in the GUI by editing this block, not System Settings
+  # (which can't write the symlink), then rebuild. The bundled-preset catalogue
+  # (~/.config/klassy/windecopresetsrc) is package data Klassy regenerates, so we
+  # deliberately leave it unmanaged. RefreshedConfig tracks the Klassy version
+  # that wrote this; bump it if a future Klassy upgrade needs to re-migrate.
+  xdg.configFile."klassy/klassyrc".text = ''
+    [ButtonBehaviour]
+    ShowCloseOutlineNormallyActive=true
+    ShowCloseOutlineNormallyInactive=true
+    ShowOutlineNormallyActive=true
+    ShowOutlineNormallyInactive=true
+    VaryColorCloseBackgroundActive=Opaque
+    VaryColorCloseBackgroundInactive=Opaque
+    VaryColorCloseOutlineInactive=Opaque
+    VaryColorOutlineActive=Transparent
+
+    [ButtonColors]
+    ButtonBackgroundColorsActive=AccentTrafficLights
+    ButtonBackgroundColorsInactive=AccentTrafficLights
+    ButtonBackgroundOpacityActive=87
+    ButtonBackgroundOpacityInactive=38
+    LockButtonColorsActiveInactive=false
+
+    [ButtonSizing]
+    ButtonCustomCornerRadius=1
+    ButtonSpacingRight=6
+    FullHeightButtonSpacingRight=2
+    IntegratedRoundedRectangleBottomPadding=2
+    LockButtonSpacingLeftRight=true
+    LockFullHeightButtonSpacingLeftRight=true
+
+    [Global]
+    LookAndFeelSet=org.kde.breezedark.desktop
+    RefreshedConfig=6.5.3
+
+    [TitleBarSpacing]
+    PercentMaximizedTopBottomMargins=20
+    TitleBarBottomMargin=6
+    TitleBarLeftMargin=8
+    TitleBarRightMargin=8
+    TitleBarTopMargin=6
+
+    [Windeco]
+    AnimationsSpeedRelativeSystem=-2
+    BoldButtonIcons=BoldIconsBold
+    BoldTitle=false
+    ButtonIconStyle=StyleOxygen
+    ButtonShape=ShapeSmallCircle
+    ColorizeWindowOutlineWithButton=false
+    DrawTitleBarSeparator=false
+    IconSize=IconSmall
+    SystemIconSize=SystemIcon18
+    WindowCornerRadius=6
+
+    [WindowOutlineStyle]
+    LockWindowOutlineStyleActiveInactive=true
+  '';
+
   # Konsole: a declarative profile using the same JetBrainsMono Nerd Font coding
   # font as VSCodium (nerd-fonts.jetbrains-mono in home.packages). The "Mono"
   # family variant keeps icon glyphs single-width so terminal columns stay
@@ -231,7 +331,7 @@
     settings = {
       theme = "Catppuccin Mocha";
       font-family = "JetBrainsMono Nerd Font Mono";
-      font-size = 11;
+      font-size = 10;
     };
   };
 
@@ -274,6 +374,9 @@
         # Appearance and editing.
         "workbench.colorTheme" = "Catppuccin Mocha";
         "editor.fontFamily" = "'JetBrainsMono Nerd Font Mono', monospace"; # coding font (pkg below)
+        # 13px ≈ Ghostty's 10pt (font-size above): VSCodium sizes in pixels, Ghostty
+        # in points, so px = pt × 96/72 (×1.33) keeps the two visually matched.
+        "editor.fontSize" = 13;
         "editor.fontLigatures" = true; # JetBrains Mono's programming ligatures (->, =>, ==)
         "editor.minimap.enabled" = false; # no code-preview strip on the right
         "editor.wordWrap" = "bounded"; # soft-wrap long lines …
@@ -296,7 +399,21 @@
     nil # Nix language server (used by nix-ide above)
     elan # Lean toolchain manager (used by the Lean 4 extension)
     google-chrome # 1Password-trusted by default; native Wayland via NIXOS_OZONE_WL
+    # OrcaSlicer (Bambu X1C slicer). The stock nixpkgs build (2.3.2) renders a
+    # blank 3D viewport and heap-crashes on this hybrid GPU, so this is a
+    # from-source v2.4.0-beta build via the overlay in pkgs/orca-slicer.nix
+    # (clang + Eigen 5 + wxWidgets 3.3 EGL canvas + Mesa-pinned + dark GTK).
+    # 3D renders, HiDPI scaling is correct; it still aborts ungracefully on quit
+    # (harmless — config saves first). Replaced the old Flatpak.
+    orca-slicer
     nerd-fonts.jetbrains-mono # coding font w/ Nerd Font glyphs (VSCodium + Konsole)
+    # Klassy window decoration. Binary KDecoration3 plugin
+    # (lib/qt-6/plugins/org.kde.kdecoration3/org.kde.klassy.so) selected by
+    # programs.plasma.workspace.windowDecorations above. Provides the "Klassy"
+    # title bars — rounded corners, accent-coloured buttons, thin window outline.
+    # Also bundles an application style (styles/klassy6.so) we leave unselected so
+    # Kvantum keeps owning the widgets/scrollbars.
+    klassy
     # Catppuccin KDE colour scheme. Installs share/color-schemes/Catppuccin*.colors
     # (referenced by programs.plasma.workspace.colorScheme above). Built for just
     # Mocha/Mauve to keep the closure small; add more flavours/accents here to
@@ -321,4 +438,9 @@
       accent = "mauve";
     })
   ];
+
+  # (OrcaSlicer was previously a Flatpak here; it's now the native overlay build
+  # in home.packages above, so the nix-flatpak declaration was removed. The
+  # nix-flatpak module is still wired in flake.nix and the system flatpak service
+  # in common.nix is still enabled, ready if another Flatpak app is wanted.)
 }

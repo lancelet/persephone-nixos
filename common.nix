@@ -13,6 +13,11 @@
     "8.8.8.8"
     "1.1.1.1"
   ];
+  # OrcaSlicer (home.nix) discovers Bambu Lab printers via a UDP broadcast on
+  # port 2021; the default firewall drops it, so the printer never appears.
+  # Orca has no manual-IP fallback, so this is required for LAN-mode binding.
+  # Add 1990/2022 here too if discovery still fails on some networks.
+  networking.firewall.allowedUDPPorts = [ 2021 ];
   hardware.bluetooth.enable = true;
 
   # Power management
@@ -31,6 +36,14 @@
   services.displayManager.sddm.enable = true;
   services.displayManager.sddm.wayland.enable = true;
   services.desktopManager.plasma6.enable = true;
+
+  # Flatpak, for apps that don't package cleanly in nixpkgs. OrcaSlicer was the
+  # original motivating case (the nixpkgs build renders a blank 3D viewport and
+  # heap-corrupts on this hybrid AMD-iGPU/NVIDIA-dGPU system), but it's now a
+  # native from-source build instead — see pkgs/orca-slicer.nix. Flatpak is kept
+  # enabled for any future such app. (Plasma 6 provides the xdg-desktop-portal
+  # backend.)
+  services.flatpak.enable = true;
 
   # Audio (PipeWire)
   security.rtkit.enable = true;
@@ -78,6 +91,8 @@
     curl
     wget
     git
+    pciutils # lspci / setpci — inspect PCI devices (GPUs, expansion modules)
+    usbutils # lsusb — inspect USB devices
   ];
 
   # Nix daemon settings

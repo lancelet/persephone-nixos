@@ -18,6 +18,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.home-manager.follows = "home-manager";
     };
+    # Declarative Flatpak installs (the OrcaSlicer Flatpak, declared in home.nix).
+    nix-flatpak.url = "github:gmodena/nix-flatpak";
   };
 
   outputs =
@@ -26,6 +28,7 @@
       nixos-hardware,
       home-manager,
       plasma-manager,
+      nix-flatpak,
       ...
     }:
     let
@@ -33,6 +36,11 @@
         ./common.nix
         home-manager.nixosModules.home-manager
         {
+          # OrcaSlicer: from-source v2.4.0-beta build that works on these
+          # machines (see pkgs/orca-slicer.nix). Applied as an overlay so it
+          # reaches home-manager via useGlobalPkgs below.
+          nixpkgs.overlays = [ (import ./pkgs/orca-slicer.nix) ];
+
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
           # Move aside any pre-existing file/dir that a generation wants to own
@@ -41,7 +49,10 @@
           # extensions dir silently fails and no home config applies.
           home-manager.backupFileExtension = "backup";
           home-manager.extraSpecialArgs = { inherit inputs; };
-          home-manager.sharedModules = [ plasma-manager.homeModules.plasma-manager ];
+          home-manager.sharedModules = [
+            plasma-manager.homeModules.plasma-manager
+            nix-flatpak.homeManagerModules.nix-flatpak
+          ];
           home-manager.users.jsm = import ./home.nix;
         }
       ];
