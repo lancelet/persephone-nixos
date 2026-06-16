@@ -126,11 +126,26 @@
   # See https://nix-community.github.io/plasma-manager/
   programs.plasma = {
     enable = true;
-    # Standard Breeze Dark. Owning this here overwrites the orphaned Stylix /
-    # OsakaJade (green) theming left in ~/.config by the previous setup.
+    # Catppuccin Mocha (Mauve accent) colour scheme. The scheme file ships in the
+    # catppuccin-kde package (home.packages below); "CatppuccinMochaMauve" is the
+    # basename of its .colors file. We keep the breezedark look-and-feel (dark
+    # Plasma theme + window decorations) and only override the colours, rather
+    # than applying Catppuccin's full global theme — staying close to stock per
+    # the desktop direction. Owning this here also overwrites any orphaned prior
+    # theming.
+    #
+    # widgetStyle = "kvantum" swaps the Qt *application style* from Breeze to
+    # Kvantum (engine + Catppuccin Mocha/Mauve Kvantum theme in home.packages
+    # below; the theme is selected by ~/.config/Kvantum/kvantum.kvconfig further
+    # down). The sole motivation is scrollbars: stock Breeze hardcodes a track +
+    # handle with no knob to slim it down, whereas the Catppuccin Kvantum theme
+    # ships transient (overlay) scrollbars — no groove, just a thin handle that
+    # fades in on hover. Kvantum's widgets otherwise track the same Mocha/Mauve
+    # palette, so the desktop stays cohesive.
     workspace = {
-      colorScheme = "BreezeDark";
+      colorScheme = "CatppuccinMochaMauve";
       lookAndFeel = "org.kde.breezedark.desktop";
+      widgetStyle = "kvantum";
     };
     # Mouse tuning. IDs are hex (plasma-manager converts to the decimal KDE
     # stores); "default" is the adaptive acceleration profile.
@@ -153,6 +168,16 @@
     ];
     configFile.krunnerrc.General.FreeFloating = true;
   };
+
+  # Select the Kvantum theme (the engine reads this file on startup). Pointing it
+  # at the Catppuccin Mocha/Mauve theme is what actually activates the subtle
+  # overlay scrollbars described in the workspace block above — the theme's own
+  # kvconfig carries transient_scrollbar=true and transient_groove=false, so
+  # nothing else needs setting here.
+  xdg.configFile."Kvantum/kvantum.kvconfig".text = ''
+    [General]
+    theme=catppuccin-mocha-mauve
+  '';
 
   # Konsole: a declarative profile using the same JetBrainsMono Nerd Font coding
   # font as VSCodium (nerd-fonts.jetbrains-mono in home.packages). The "Mono"
@@ -233,5 +258,28 @@
     elan # Lean toolchain manager (used by the Lean 4 extension)
     google-chrome # 1Password-trusted by default; native Wayland via NIXOS_OZONE_WL
     nerd-fonts.jetbrains-mono # coding font w/ Nerd Font glyphs (VSCodium + Konsole)
+    # Catppuccin KDE colour scheme. Installs share/color-schemes/Catppuccin*.colors
+    # (referenced by programs.plasma.workspace.colorScheme above). Built for just
+    # Mocha/Mauve to keep the closure small; add more flavours/accents here to
+    # make them selectable in System Settings.
+    (catppuccin-kde.override {
+      flavour = [ "mocha" ];
+      accents = [ "mauve" ];
+      winDecStyles = [ "modern" ];
+    })
+    # Kvantum SVG theme engine (the Qt6 style plugin that backs
+    # programs.plasma.workspace.widgetStyle = "kvantum" above). Ships
+    # lib/qt-6/plugins/styles/libkvantum.so; the Plasma session finds it because
+    # NixOS's QT_PLUGIN_PATH is profile-relative and useUserPackages installs
+    # this into the per-user profile — so no system-level change is needed.
+    kdePackages.qtstyleplugin-kvantum
+    # Catppuccin Mocha (Mauve) Kvantum theme. Installs
+    # share/Kvantum/catppuccin-mocha-mauve/, which kvantum.kvconfig (above)
+    # selects. Ships transient (overlay) scrollbars — the whole point of the
+    # switch. Built for just Mocha/Mauve to match the colour scheme.
+    (catppuccin-kvantum.override {
+      variant = "mocha";
+      accent = "mauve";
+    })
   ];
 }
