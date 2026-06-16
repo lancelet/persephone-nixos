@@ -167,6 +167,28 @@
       "Meta+Space"
     ];
     configFile.krunnerrc.General.FreeFloating = true;
+    # Bottom panel, reproduced from the stock Plasma 6 layout so we can set it to
+    # auto-hide (macOS-dock style): it slides off-screen and reappears when the
+    # cursor hits the bottom edge. Declaring a panel here makes plasma-manager
+    # *own* it, replacing the live one — so the widget list below must mirror the
+    # default panel exactly (order taken from the running AppletOrder). Bare
+    # widget strings inherit each plasmoid's defaults, matching the unconfigured
+    # applets we replaced; the system tray auto-populates the standard items.
+    panels = [
+      {
+        location = "bottom";
+        hiding = "autohide";
+        widgets = [
+          "org.kde.plasma.kickoff"
+          "org.kde.plasma.pager"
+          "org.kde.plasma.icontasks"
+          "org.kde.plasma.marginsseparator"
+          "org.kde.plasma.systemtray"
+          "org.kde.plasma.digitalclock"
+          "org.kde.plasma.showdesktop"
+        ];
+      }
+    ];
   };
 
   # Select the Kvantum theme (the engine reads this file on startup). Pointing it
@@ -193,6 +215,23 @@
         name = "JetBrainsMono Nerd Font Mono";
         size = 11;
       };
+    };
+  };
+
+  # Ghostty: Mitchell Hashimoto's GPU-accelerated terminal, added alongside
+  # Konsole to A/B them. Same JetBrainsMono Nerd Font coding font as Konsole and
+  # VSCodium (nerd-fonts.jetbrains-mono in home.packages). "Catppuccin Mocha" is
+  # one of Ghostty's built-in themes (exact name, capitalised with a space — as
+  # listed by `ghostty +list-themes`), so it matches the desktop's Catppuccin
+  # Mocha palette without any extra package. Ligatures are on by default, so
+  # JetBrains Mono's programming ligatures render as in VSCodium. Being a GTK app
+  # it sits outside the Qt/Kvantum styling, hence theming it here directly.
+  programs.ghostty = {
+    enable = true;
+    settings = {
+      theme = "Catppuccin Mocha";
+      font-family = "JetBrainsMono Nerd Font Mono";
+      font-size = 11;
     };
   };
 
