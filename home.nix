@@ -50,6 +50,68 @@
   # enabled by default.
   programs.atuin.enable = true;
 
+  # Starship prompt, configured as the official "Pure preset" — a clean,
+  # minimal two-line prompt emulating sindresorhus/pure. Zsh integration is on
+  # by default (injected into the HM-managed zshrc above). No Nerd Font needed:
+  # the only glyphs are plain Unicode (❯/❮). Settings below are the Pure preset
+  # (https://starship.rs/presets/pure-preset) translated to Nix.
+  programs.starship = {
+    enable = true;
+    settings =
+      # The Pure preset marks "dirty" git state with a single `*`, using a
+      # zero-width space as each per-category symbol so the group renders the
+      # `*` without printing per-category letters. fromJSON decodes the
+      # \u200b escape, so no invisible character is pasted into this file.
+      let
+        zwsp = builtins.fromJSON ''"\u200b"'';
+      in
+      {
+        format = "$username$hostname$directory$git_branch$git_state$git_status$cmd_duration$line_break$python$character";
+
+        directory.style = "blue";
+
+        character = {
+          success_symbol = "[❯](purple)";
+          error_symbol = "[❯](red)";
+          vimcmd_symbol = "[❮](green)";
+        };
+
+        git_branch = {
+          format = "[$branch]($style)";
+          style = "bright-black";
+        };
+
+        git_status = {
+          format = "[[(*$conflicted$untracked$modified$staged$renamed$deleted)](218) ($ahead_behind$stashed)]($style)";
+          style = "cyan";
+          conflicted = zwsp;
+          untracked = zwsp;
+          modified = zwsp;
+          staged = zwsp;
+          renamed = zwsp;
+          deleted = zwsp;
+          stashed = "≡";
+        };
+
+        git_state = {
+          format = "\\([$state( $progress_current/$progress_total)]($style)\\) ";
+          style = "bright-black";
+        };
+
+        cmd_duration = {
+          format = "[$duration]($style) ";
+          style = "yellow";
+        };
+
+        python = {
+          format = "[$virtualenv]($style) ";
+          style = "bright-black";
+          detect_extensions = [ ];
+          detect_files = [ ];
+        };
+      };
+  };
+
   # direnv: per-directory environments loaded automatically on `cd`. nix-direnv
   # provides the `use flake` stdlib function and caches the dev shell so it
   # doesn't re-evaluate on every entry. Zsh integration is on by default, so a
@@ -92,16 +154,18 @@
     configFile.krunnerrc.General.FreeFloating = true;
   };
 
-  # Konsole: a declarative profile using the same JetBrains Mono coding font as
-  # VSCodium (jetbrains-mono pkg in home.packages). Konsole's built-in default
-  # profile can't be edited in place, so we own a named profile and default to it.
+  # Konsole: a declarative profile using the same JetBrainsMono Nerd Font coding
+  # font as VSCodium (nerd-fonts.jetbrains-mono in home.packages). The "Mono"
+  # family variant keeps icon glyphs single-width so terminal columns stay
+  # aligned. Konsole's built-in default profile can't be edited in place, so we
+  # own a named profile and default to it.
   programs.konsole = {
     enable = true;
     defaultProfile = "JetBrains";
     profiles.JetBrains = {
       name = "JetBrains";
       font = {
-        name = "JetBrains Mono";
+        name = "JetBrainsMono Nerd Font Mono";
         size = 11;
       };
     };
@@ -145,7 +209,7 @@
 
         # Appearance and editing.
         "workbench.colorTheme" = "Catppuccin Mocha";
-        "editor.fontFamily" = "'JetBrains Mono', monospace"; # coding font (pkg below)
+        "editor.fontFamily" = "'JetBrainsMono Nerd Font Mono', monospace"; # coding font (pkg below)
         "editor.fontLigatures" = true; # JetBrains Mono's programming ligatures (->, =>, ==)
         "editor.minimap.enabled" = false; # no code-preview strip on the right
         "editor.wordWrap" = "bounded"; # soft-wrap long lines …
@@ -168,6 +232,6 @@
     nil # Nix language server (used by nix-ide above)
     elan # Lean toolchain manager (used by the Lean 4 extension)
     google-chrome # 1Password-trusted by default; native Wayland via NIXOS_OZONE_WL
-    jetbrains-mono # editor coding font (see editor.fontFamily above)
+    nerd-fonts.jetbrains-mono # coding font w/ Nerd Font glyphs (VSCodium + Konsole)
   ];
 }
