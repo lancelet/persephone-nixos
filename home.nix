@@ -182,18 +182,42 @@
       };
       lowBattery.powerProfile = "powerSaving";
     };
-    # Mouse tuning. IDs are hex (plasma-manager converts to the decimal KDE
-    # stores); "default" is the adaptive acceleration profile.
-    input.mice = [
-      {
-        name = "Logitech G502";
-        vendorId = "046d";
-        productId = "407f";
-        acceleration = -0.8;
-        accelerationProfile = "default";
-        naturalScroll = true;
-      }
-    ];
+    # Mouse tuning. The G502 enumerates as TWO different devices and KDE stores
+    # per-device settings, so both must be declared or whichever mode isn't
+    # configured falls back to KDE defaults — the cause of the "jerky when I plug
+    # it in to charge" inconsistency:
+    #   - wired / charging:  "Logitech G502"                              (407f)
+    #   - wireless Lightspeed: "Logitech G502 LIGHTSPEED Wireless Gaming Mouse" (c08d)
+    # IDs are hex (plasma-manager converts to the decimal KDE stores). Acceleration
+    # profile: "default" = KDE's adaptive (speed-dependent) curve; "none" = flat /
+    # 1:1 with no acceleration. If the pointer still feels jerky in both modes,
+    # switch both to "none" — the adaptive curve is the usual culprit.
+    input.mice =
+      let
+        g502 = {
+          acceleration = -0.8;
+          accelerationProfile = "default";
+          naturalScroll = true;
+        };
+      in
+      [
+        (
+          g502
+          // {
+            name = "Logitech G502";
+            vendorId = "046d";
+            productId = "407f";
+          }
+        )
+        (
+          g502
+          // {
+            name = "Logitech G502 LIGHTSPEED Wireless Gaming Mouse";
+            vendorId = "046d";
+            productId = "c08d";
+          }
+        )
+      ];
     # macOS Spotlight-style launcher: Meta+Space opens KRunner (kept alongside
     # the default Alt+Space). FreeFloating makes KRunner a centred floating box
     # rather than docking to the top edge of the screen.
