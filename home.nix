@@ -23,6 +23,10 @@
       nrb = "nixos-rebuild build --flake ~/persephone-nixos#$(hostname)";
       # Format the flake, then build and switch.
       nrs = "nix fmt ~/persephone-nixos && sudo nixos-rebuild switch --flake ~/persephone-nixos#$(hostname)";
+      # vi/vim → nvim (replaces programs.neovim's viAlias/vimAlias, which we dropped
+      # so home-manager doesn't manage ~/.config/nvim — see the neovim note below).
+      vi = "nvim";
+      vim = "nvim";
     };
   };
 
@@ -38,13 +42,13 @@
     };
   };
 
-  # Neovim, set as the default editor ($EDITOR=nvim), with vi/vim aliases.
-  programs.neovim = {
-    enable = true;
-    defaultEditor = true;
-    viAlias = true;
-    vimAlias = true;
-  };
+  # Neovim is installed as a plain package (see home.packages) rather than via
+  # programs.neovim. That module generates and OWNS ~/.config/nvim/init.lua, which
+  # clobbers a hand-installed LazyVim (whose entry point is that same init.lua). By
+  # installing only the binary we leave ~/.config/nvim entirely to LazyVim. The
+  # module's conveniences are replicated by hand: $EDITOR here, vi/vim aliases in
+  # programs.zsh.shellAliases above.
+  home.sessionVariables.EDITOR = "nvim";
 
   # Atuin: magical shell history (Ctrl-R search, etc.). Zsh integration is
   # enabled by default.
@@ -195,9 +199,10 @@
     input.mice =
       let
         g502 = {
-          acceleration = -0.8;
+          acceleration = 0.0; # KDE "pointer speed" slider (PointerAcceleration); 0 = middle
           accelerationProfile = "default";
           naturalScroll = true;
+          scrollSpeed = 5; # KDE "scroll speed" slider (ScrollFactor); raised to offset hi-res off
         };
       in
       [
@@ -336,7 +341,7 @@
     profiles.JetBrains = {
       name = "JetBrains";
       font = {
-        name = "JetBrainsMono Nerd Font Mono";
+        name = "FiraMono Nerd Font Mono"; # trialling Fira Mono (was JetBrainsMono Nerd Font Mono)
         size = 11;
       };
     };
@@ -354,7 +359,7 @@
     enable = true;
     settings = {
       theme = "Catppuccin Mocha";
-      font-family = "JetBrainsMono Nerd Font Mono";
+      font-family = "FiraMono Nerd Font Mono"; # trialling Fira Mono (was JetBrainsMono Nerd Font Mono)
       font-size = 10;
     };
   };
@@ -420,9 +425,38 @@
 
   # User packages.
   home.packages = with pkgs; [
-    nil # Nix language server (used by nix-ide above)
+    neovim # editor; config is hand-managed LazyVim in ~/.config/nvim (NOT via
+    # programs.neovim — see the note near programs.zsh — so HM doesn't own init.lua)
+    nil # Nix LSP for VSCodium's nix-ide extension (nix.serverPath above)
+    nixd # Nix LSP for Neovim/LazyVim — evaluates a flake for NixOS option +
+    # package completion (the target flake + exprs live in
+    # ~/.config/nvim/lua/plugins/nixd.lua, currently ~/nixos; LazyVim's lang.nix
+    # default nil_ls is disabled there). VSCodium stays on nil.
     elan # Lean toolchain manager (used by the Lean 4 extension)
+    gcc # C/C++ compiler — provides `cc`/`gcc` so nvim-treesitter (LazyVim) can
+    # compile its parsers; also a general dev compiler (NixOS has none in PATH by default)
+    tree-sitter # tree-sitter CLI — nvim-treesitter's `main` branch builds parsers
+    # via `tree-sitter build` (not cc directly), so the CLI is required alongside gcc
+    # Nix language tooling for LazyVim's lang.nix extra (Mason can't install these
+    # on NixOS, so they come from here): nixd = LSP (above), nixfmt = formatter
+    # (conform's "nixfmt"), statix = linter (nvim-lint).
+    nixfmt # `nixfmt` binary — conform formatter for .nix in LazyVim's lang.nix
+    statix # Nix linter used by LazyVim's lang.nix (nvim-lint)
+    # LazyVim LSP/formatter tools. Mason is DISABLED on NixOS (it can't link its
+    # prebuilt downloads — see ~/.config/nvim/lua/plugins/nixos.lua), so every
+    # server/formatter/linter comes from here and is found on $PATH. Add the
+    # matching package whenever a new LazyVim lang extra is enabled.
+    vscode-langservers-extracted # jsonls (vscode-json-language-server) + css/html/eslint (lang.json)
+    marksman # Markdown LSP (lang.markdown)
+    markdownlint-cli2 # Markdown linter + formatter (lang.markdown)
+    markdown-toc # Markdown table-of-contents formatter (lang.markdown)
+    prettier # formatter for markdown/json/web (lang.markdown, lang.json)
+    lua-language-server # lua_ls — LazyVim core LSP for editing this config
     google-chrome # 1Password-trusted by default; native Wayland via NIXOS_OZONE_WL
+    solaar # Logitech device manager — used to disable the G502's high-resolution
+    # scrolling (set "Scroll Wheel Resolution"/hi-res OFF in the GUI once; the
+    # autostart service below re-applies it on each reconnect). Needs the udev
+    # rules from hardware.logitech.wireless.enable in common.nix.
     # OrcaSlicer (Bambu X1C slicer). The stock nixpkgs build (2.3.2) renders a
     # blank 3D viewport and heap-crashes on this hybrid GPU, so this is a
     # from-source v2.4.0-beta build via the overlay in pkgs/orca-slicer.nix
@@ -430,7 +464,8 @@
     # 3D renders, HiDPI scaling is correct; it still aborts ungracefully on quit
     # (harmless — config saves first). Replaced the old Flatpak.
     orca-slicer
-    nerd-fonts.jetbrains-mono # coding font w/ Nerd Font glyphs (VSCodium + Konsole)
+    nerd-fonts.jetbrains-mono # coding font w/ Nerd Font glyphs (VSCodium; kept so the Fira trial is easy to revert)
+    nerd-fonts.fira-mono # trialling this in the terminals (Konsole + Ghostty); see programs.konsole/ghostty above
     # Klassy window decoration. Binary KDecoration3 plugin
     # (lib/qt-6/plugins/org.kde.kdecoration3/org.kde.klassy.so) selected by
     # programs.plasma.workspace.windowDecorations above. Provides the "Klassy"
@@ -467,4 +502,23 @@
   # in home.packages above, so the nix-flatpak declaration was removed. The
   # nix-flatpak module is still wired in flake.nix and the system flatpak service
   # in common.nix is still enabled, ready if another Flatpak app is wanted.)
+
+  # Autostart Solaar (hidden, in the tray) in the graphical session. Solaar only
+  # re-applies its saved device settings — notably the G502's hi-res-scroll OFF —
+  # while it's running, so this keeps the setting in effect across reconnects and
+  # reboots. Configure the actual toggle once in the Solaar GUI; it's saved to
+  # ~/.config/solaar/config.yaml and re-applied by this service on each connect.
+  systemd.user.services.solaar = {
+    Unit = {
+      Description = "Solaar - Logitech device manager (applies saved settings)";
+      After = [ "graphical-session.target" ];
+      PartOf = [ "graphical-session.target" ];
+    };
+    Install.WantedBy = [ "graphical-session.target" ];
+    Service = {
+      ExecStart = "${pkgs.solaar}/bin/solaar --window=hide";
+      Restart = "on-failure";
+      RestartSec = 5;
+    };
+  };
 }

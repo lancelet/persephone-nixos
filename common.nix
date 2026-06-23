@@ -20,6 +20,12 @@
   networking.firewall.allowedUDPPorts = [ 2021 ];
   hardware.bluetooth.enable = true;
 
+  # Logitech wireless support: installs the udev rules so Solaar (home.nix) can
+  # talk to the Lightspeed receiver as a normal user. Used to turn OFF the G502's
+  # high-resolution scrolling (which emits ~10 events per wheel detent → over-
+  # scrolling in terminals/Neovim) while keeping the ratchet, no free-spin drift.
+  hardware.logitech.wireless.enable = true;
+
   # Power management
   services.power-profiles-daemon.enable = true;
   services.upower.enable = true;
