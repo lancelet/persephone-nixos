@@ -71,6 +71,16 @@ in
       stdenv = prev.clangStdenv;
       eigen = eigen5;
       wxwidgets_3_1 = wxOrca;
+      # Build gst-plugins-good with GTK support so it ships the `gtksink`
+      # element. OrcaSlicer's printer-camera live-view needs it on native
+      # Wayland ("requires the GStreamer GTK video sink"); the default build
+      # has gtkSupport=false. Swap the variant in (rather than add a second
+      # copy) so the GST plugin path has no duplicate plugins.
+      gst_all_1 = prev.gst_all_1 // {
+        gst-plugins-good = prev.gst_all_1.gst-plugins-good.override {
+          gtkSupport = true;
+        };
+      };
     }).overrideAttrs
       (old: {
         version = "2.4.0-beta";
